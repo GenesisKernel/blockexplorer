@@ -1,0 +1,81 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+    <h3>Ecosystem {{ ecosystem_id }}</h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h4>Members</h4>
+      <table id="genesis_ecosystem_members" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h4>Parameters</h4>
+      <table id="genesis_ecosystem_params" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for p_column_name in p_column_names %}
+            <th>{{ p_column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      var table = $('#genesis_ecosystem_members').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "/dt/genesis/database/{{ db_id }}/ecosystem/{{ ecosystem_id }}/members",
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    return data;
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      var table3 = $('#genesis_ecosystem_params').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "/dt/genesis/database/{{ db_id }}/ecosystem/{{ ecosystem_id }}/params",
+        "columns": [
+            {% for p_col_ind in range(0, p_columns_num) %}
+            {
+                "data": {{ p_col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    return data;
+                },
+            },
+            {% endfor %}
+        ]
+      });
+    });
+  </script>
+{% endblock %}

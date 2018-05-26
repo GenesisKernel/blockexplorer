@@ -1,0 +1,86 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Blocks</h3>
+      <table id="genesis_blocks" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Transactions</h3>
+      <table id="genesis_transactions" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in t_column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      var table = $('#genesis_blocks').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "ajax": "/dt/genesis/database/{{ db_id }}/blocks",
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                {% if col_ind == tx_col_ind %}
+                    return '<a href="/genesis/database/{{ db_id }}/transactions_by_block/' + row[{{ block_id_col_ind }}] + '">' + data + '</a>';
+                {% else %}
+                    return '<a href="/genesis/database/{{ db_id }}/block_adv/' + row[0] + '">' + data + '</a>';
+                {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      var table2 = $('#genesis_transactions').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "ajax": "/dt/genesis/database/{{ db_id }}/transactions",
+        "columns": [
+            {% for col_ind in range(0, t_columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    {% if col_ind == t_block_id_col_ind %}
+                    return '<a href="/genesis/database/{{ db_id }}/block/' + row[{{ t_block_id_col_ind }}] + '">' + data + '</a>';
+                    {% else %}
+                    return '<a href="/genesis/database/{{ db_id }}/transaction/' + row[{{ t_hash_col_ind }}] + '">' + data + '</a>';
+                    {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+    });
+  </script>
+{% endblock %}

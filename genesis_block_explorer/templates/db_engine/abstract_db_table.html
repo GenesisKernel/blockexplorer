@@ -1,0 +1,63 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Current database.table: {{current_db}}.{{ table_name }} </h3>
+      <table id="abstract_db_tables" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {# for column_name in column_names #}
+            <!-- <th>{# column_name #}</th> -->
+            {# endfor #}
+            <th>Id</th>
+            <th>Hash</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      var table = $('#abstract_db_tables').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "{{ url_for('dt_block_chain') }}",
+        //"columns": [
+        //    {
+        //        "data": 0,
+        //        "render": function ( data, type, row, meta ) {
+        //            return '<a href="{{ url_for('address_data') }}&id=' + data + '">' + data + '</a>';
+        //        },
+        //    },
+        //    {
+        //        "data": 1,
+        //        "render": function ( data, type, row, meta ) {
+        //            var output = "meta: ";
+        //            var propValue;
+        //            for(var propName in meta) {
+        //                propValue = meta[propName];
+        //                output += " prop: " + propName + "='"+ propValue + "'";
+        //            }
+        //            output += " | row: "
+        //            for(var propName in row) {
+        //                propValue = row[propName];
+        //                output += " prop: " + propName + "='"+ propValue + "'";
+        //            }
+        //            return '<a href="'+data+'">'+output+'</a>';
+        //        }
+        //    }
+        //]
+      });
+    });
+  </script>
+{% endblock %}

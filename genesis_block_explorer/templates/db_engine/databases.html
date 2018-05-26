@@ -1,0 +1,47 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.10/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Databases</h3>
+      <table id="db_engine_databases" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      var tables_url_1 = '{{ url_for('tables', id=1) }}';
+      var table = $('#db_engine_databases').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": "{{ url_for('dt_databases') }}",
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    return '<a href="/db-engine/database/' + row[0] + '/tables">' + data + '</a>';
+                },
+            },
+            {% endfor %}
+        ]
+      });
+    });
+  </script>
+{% endblock %}

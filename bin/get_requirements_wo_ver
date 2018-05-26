@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+this_dir="$(cd "$(dirname "$0")" && pwd)"
+
+cat "$this_dir/../requirements.txt" | awk -F '==' '{print $1}'
