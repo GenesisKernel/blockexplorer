@@ -16,3 +16,4 @@ jwt
 Flask-JsonTools
 msgpack
 attrdict
+gunicorn
