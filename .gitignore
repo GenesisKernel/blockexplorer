@@ -46,3 +46,4 @@ include
 # Logs
 *.log
 *.log.*
+config.py.*
