@@ -17,3 +17,6 @@ Flask-JsonTools
 msgpack
 attrdict
 gunicorn
+astunparse
+docopt
+autopep8
