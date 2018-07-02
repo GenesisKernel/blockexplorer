@@ -48,7 +48,6 @@ class ConfigParsed:
 
     def add_db_engine(self, bind_name, backend_version):
         for db_engine in self.find_db_engine_discovery_map():
-            print("FOUND db_engine, adding %s: %s" % (bind_name, backend_version))
             _bind_name = ast.Str(s=bind_name)
             dict_keys = [ast.Str(s='backend_version')]
             dict_values = [ast.Str(s=backend_version)]

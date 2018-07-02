@@ -32,4 +32,3 @@ class AddDbEngine(Base):
             config.parsed.add_db_engine(bind_name, backend_version)
             config.parsed_to_content()
             config.save()
-        print("config: %s" % config.content)
