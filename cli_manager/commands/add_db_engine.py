@@ -26,7 +26,7 @@ class AddDbEngine(Base):
 
         config = config_editor.ConfigEditor(config_path)
         bind_name = self.options.get("--bind-name") 
-        backend_version = self.options.get("--backend-version")
+        backend_version = int(self.options.get("--backend-version"))
         if bind_name and backend_version:
             config.parse()
             config.parsed.add_db_engine(bind_name, backend_version)
