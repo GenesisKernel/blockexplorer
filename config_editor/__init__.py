@@ -26,7 +26,7 @@ class Config:
         self.use_autopep8 = kwargs.get('use_autopep8', True)
         self.autopep8_options = kwargs.get('autopep8_options',
                                            {'aggressive': 1})
-        self.save_to_same_file = kwargs.get('save_to_same_file', False)
+        self.save_to_same_file = kwargs.get('save_to_same_file', True)
         self.load()
 
 class ConfigParsed:
@@ -36,13 +36,25 @@ class ConfigParsed:
     def find_sqla_binds(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'SQLALCHEMY_BINDS']
 
+    def find_db_engine_discovery_map(self):
+        return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'DB_ENGINE_DISCOVERY_MAP']
+
     def add_bind(self, name, value):
         for sqla_bind in self.find_sqla_binds():
-            print("FOUND sqla_bind, adding %s: %s" % (name, value))
             _name = ast.Str(s=name)
             _value = ast.Str(s=value)
             sqla_bind.value.keys.append(_name)
             sqla_bind.value.values.append(_value)
+
+    def add_db_engine(self, bind_name, backend_version):
+        for db_engine in self.find_db_engine_discovery_map():
+            print("FOUND db_engine, adding %s: %s" % (bind_name, backend_version))
+            _bind_name = ast.Str(s=bind_name)
+            dict_keys = [ast.Str(s='backend_version')]
+            dict_values = [ast.Str(s=backend_version)]
+            _dict = ast.Dict(keys=dict_keys, values=dict_values)
+            db_engine.value.keys.append(_bind_name)
+            db_engine.value.values.append(_dict)
 
     def to_source(self):
         return astunparse.unparse(self.parsed)

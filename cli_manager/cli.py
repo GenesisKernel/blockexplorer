@@ -4,6 +4,7 @@ Genesis Block Explorer CLI Manager
 
 Usage:
   cli_manage add-bind --name=<name> --value=<value> [--config-path=<config-path>]
+  cli_manage add-db-engine --bind-name=<bind-name> --backend-version=<backend-version> [--config-path=<config-path>]
   cli_manage -h | --help
   cli_manage --version
 
