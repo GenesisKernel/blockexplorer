@@ -30,7 +30,8 @@ def transaction(id, tx_hash):
     #column_names = ['Name', 'Title', 'Source', 'Raw', 'Type', 'Value']
     column_names = ['Title', 'Value']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/transaction.html', project='values',
+    return render_template('genesis/transaction.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             tx_hash=tx_hash,

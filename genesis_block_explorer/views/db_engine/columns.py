@@ -19,7 +19,8 @@ def columns(id):
     column_names = ['Name', 'Type', 'Default', 'AutoIncrement',
                   'Primary Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('db_engine/columns.html', project='values',
+    return render_template('db_engine/columns.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             valid_db_id=valid_db_id,
                             db_id=table.database.id,

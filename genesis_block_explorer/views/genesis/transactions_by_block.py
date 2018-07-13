@@ -62,7 +62,8 @@ def transactions_by_block(id, block_id):
     column_names = ['Time', 'Sender Key ID', 'Ecosystem ID',
                     'Hash', 'Type', 'Error']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/transactions_by_block.html', project='values',
+    return render_template('genesis/transactions_by_block.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             valid_db_id=valid_db_id,

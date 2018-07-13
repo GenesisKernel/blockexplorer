@@ -15,8 +15,8 @@ def databases():
     valid_db_id = get_by_id_or_first_genesis_db_id()
     column_names = ['ID', 'Name', 'Engine', 'Driver', 'Backend Version']
     return render_template('db_engine/databases.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             valid_db_id=valid_db_id,
-                            project='databases',
                             column_names=column_names,
                             columns_num=len(column_names))
 

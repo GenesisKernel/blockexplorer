@@ -26,7 +26,8 @@ def full_nodes(id):
     column_names = ['TCP Address', 'TCP Port', 'API URL', 'Key ID',
                     'Public Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/full_nodes.html', project='values',
+    return render_template('genesis/full_nodes.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             column_names=column_names,

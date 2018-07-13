@@ -120,7 +120,8 @@ def blocks_adv(id):
     t_column_names = ['Time', 'Sender Key ID', 'Ecosystem ID',
                     'Block ID', 'Hash', 'Type', 'Error']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/blocks_adv.html', project='values',
+    return render_template('genesis/blocks_adv.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             db_name=table.database.name,

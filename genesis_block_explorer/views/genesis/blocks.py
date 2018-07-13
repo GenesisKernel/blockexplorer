@@ -123,7 +123,8 @@ def blocks(id):
     column_names = ['Block ID', 'Time', 'Hash', 'Node Position', 'Ecosystem ID',
             'Key ID', 'TX']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/blocks.html', project='values',
+    return render_template('genesis/blocks.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             db_name=table.database.name,

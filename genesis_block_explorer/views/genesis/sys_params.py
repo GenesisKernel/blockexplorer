@@ -28,7 +28,8 @@ class DataTablesSysParams(DataTablesExt):
 def sys_params(id):
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
     column_names = ['Name', 'Value', 'Conditions']
-    return render_template('genesis/sys_params.html', project='values',
+    return render_template('genesis/sys_params.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             column_names=column_names,

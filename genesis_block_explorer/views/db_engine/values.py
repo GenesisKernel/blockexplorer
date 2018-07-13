@@ -19,7 +19,8 @@ def values(id):
     table, model, model_name = get_model_data_by_table_id(id)
     column_names = model.__table__.columns.keys()
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('db_engine/values.html', project='values',
+    return render_template('db_engine/values.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             valid_db_id=valid_db_id,
