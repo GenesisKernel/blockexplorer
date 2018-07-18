@@ -15,7 +15,6 @@ SQLALCHEMY_BINDS = {
 }
 
 DB_ENGINE_DISCOVERY_MAP = {
-    'genesis1': {'backend_version': 20180512},
 }
 
 BACKEND_VERSION_FEATURES_MAP = {
