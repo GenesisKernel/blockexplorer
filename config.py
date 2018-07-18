@@ -12,7 +12,6 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers'  : 'sqlite:///:memory:',
-    'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
 }
 
 DB_ENGINE_DISCOVERY_MAP = {
