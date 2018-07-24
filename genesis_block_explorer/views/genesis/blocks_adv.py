@@ -74,7 +74,7 @@ class DataTablesBlocks(DataTablesExt):
                                 raise e
 
                             if parse_error:
-                                p_data['key_id'] = 'Parse Error'
+                                p_data['key_id'] = ''
                             else:
                                 if hasattr(p, 'block_data'):
                                     if 'key_id' in p.block_data:

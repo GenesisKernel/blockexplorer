@@ -60,7 +60,7 @@ def parse_full_nodes_rec_row(row):
         else:
             logger.warning("tcp_address key doesn't exist")
         if 'key_id' in row:
-            key_id = row['tcp_address']
+            key_id = row['key_id']
         else:
             logger.warning("tcp_address key doesn't exist")
         if 'public_key' in row:
