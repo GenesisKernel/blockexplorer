@@ -18,6 +18,17 @@ DB_ENGINE_DISCOVERY_MAP = {
 }
 
 BACKEND_VERSION_FEATURES_MAP = {
+    20180830: {
+        'github-branch': 'master',
+        'github-commmit': ' e5ddc76',
+        'url': 'https://github.com/GenesisKernel/go-genesis/pull/513',
+        'features': [
+            'blocks_tx_info_api_endpoint',
+            'system_parameters_at_ecosystem',
+            'image_id_instead_of_avatar',
+            'member_info_at_members',
+        ]
+    },
     20180512: {
         'github-branch': 'develop',
         'github-commmit': '4b69b8e',
