@@ -10,14 +10,20 @@ with open(os.path.join(here, 'README.md')) as f:
 
 requires = [
     'sqlalchemy-datatables',
-    'Flask',
+    'Flask==1.0.2',
     'jinja2',
     'Flask-SQLAlchemy',
     'Flask-RESTful',
+    'Flask-JSONTools',
     'Flask-JWT',
     'psycopg2',
     'inflect',
     'dictalchemy',
+    'genesis-blockchain-api-client',
+]
+
+dependency_links = [
+    'git+https://github.com/blitzstern5/genesis-blockchain-api-client#egg=genesis-blockchain-api-client',
 ]
 
 setup(
@@ -40,4 +46,5 @@ setup(
     zip_safe=False,
     test_suite='genesis_block_explorer',
     install_requires=requires,
+    dependency_links=dependency_links,
 )
