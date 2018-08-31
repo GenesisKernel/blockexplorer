@@ -11,11 +11,13 @@ from sqlalchemy.orm.exc import NoResultFound
 from ...db import db
 
 from ...models.genesis.explicit import BlockChain
-from ...models.genesis.helpers import BlockHelper 
+from ...models.genesis.helpers import BlockHelper, BlockHelper2
 from ...models.db_engine.session import SessionManager
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from ...datatables import DataTablesExt
+
+from ...client import *
 
 logger = get_logger(app)
 sm = SessionManager(app=app)
@@ -64,7 +66,7 @@ def block_data(id, block_id):
     show_raw_data = request.args.get("show_raw_data", False)
     if show_raw_data == "False":
         show_raw_data = False
-    model = BlockHelper 
+    model = BlockHelper2 
     column_ids = ['title', 'value']
     columns = [getattr(model, col_id) for col_id in column_ids]
     dt_columns = [ColumnDT(m) for m in columns]
