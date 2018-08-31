@@ -64,7 +64,7 @@ def create_app(**kwargs):
         from .views import home
         from .views.db_engine import databases, tables, columns, values
         from .views.genesis import (
-            blocks, blocks_adv, block, block_adv,
+            blocks, blocks_adv, block, block_adv, block_new,
             ecosystems, ecosystem_members, ecosystem_params, ecosystem_adv,
             sys_params, sys_params_adv, full_nodes,
             transactions, transactions_by_block, transaction

@@ -12,9 +12,12 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers'  : 'sqlite:///:memory:',
+    'genesis_cache': 'sqlite:///' + os.path.join(basedir, 'genesis_cache.sqlite'),
+    'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
 }
 
 DB_ENGINE_DISCOVERY_MAP = {
+    'genesis1': { 'backend_version': 20180830 },
 }
 
 BACKEND_VERSION_FEATURES_MAP = {
