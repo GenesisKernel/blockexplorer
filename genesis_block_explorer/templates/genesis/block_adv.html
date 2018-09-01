@@ -34,7 +34,22 @@
   </div>
   <div class="row">
     <div class="col-lg-12">
-      <h3>Transactions by Block {{ block_id }}</h3>
+      <h3>Block {{ block_id }} Transactions</h3>
+      <table id="genesis_block_transactions" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Transactions Status by Block {{ block_id }}</h3>
       <table id="genesis_transactions_by_block" class="display" cellspacing="0" width="100%">
         <thead>
           <tr>
@@ -75,7 +90,30 @@
             {% endfor %}
         ]
       });
-      var table2 = $('#genesis_transactions_by_block').DataTable({
+      var table2 = $('#genesis_block_transactions').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/dt/genesis/database/{{ db_id }}/block-transactions/{{ block_id }}",
+            "data": function(d) {
+                d.show_raw_data = "{{ show_raw_data }}";
+            }
+        },
+        "iDisplayLength": 100,
+        "paging": false,
+        "bInfo" : false,
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    return data;
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      var table3 = $('#genesis_transactions_by_block').DataTable({
         "order": [[ 0, "desc" ]],
         "processing": true,
         "serverSide": true,
