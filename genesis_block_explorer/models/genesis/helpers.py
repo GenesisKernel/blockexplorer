@@ -296,7 +296,7 @@ class BlockTransactionsHelper(db.Model):
         if 'transactions' in data:
             for tx in data['transactions']:
                 d = {'db_id': db_id, 'block_id': block_id}
-                tx['hash'] = tx['hash'][:].encode().hex()
+                #tx['hash'] = tx['hash'][:].encode().hex()
                 tx['params'] = str(tx['params'])
                 d.update(tx)
                 list_of_dicts.append(d)
