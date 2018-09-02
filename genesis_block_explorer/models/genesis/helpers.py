@@ -287,16 +287,6 @@ class BlockTransactionsHelper(db.Model):
     params = db.Column(db.String)
 
     @classmethod
-    def update_from_sys_param(cls, db_id=1):
-        model = get_sys_param_model(backend_features=sm.get_be_features(db_id))
-        data = model.query.with_session(sm.get(db_id)).filter_by(name='full_nodes').one().value
-        data = parse_full_nodes_rec(data, add_db_id=db_id)
-        cls.query.filter_by(db_id=db_id)
-        i = insert(cls.__table__)
-        i = i.values(data)
-        db.session.execute(i)
-
-    @classmethod
     def update_from_block(cls, **kwargs):
         db_id = kwargs.get('db_id', 1)
         block_id = kwargs.get('block_id', '')
@@ -306,13 +296,14 @@ class BlockTransactionsHelper(db.Model):
         if 'transactions' in data:
             for tx in data['transactions']:
                 d = {'db_id': db_id, 'block_id': block_id}
-                logger.debug("HHHHHHHHHHHHHHHHHH hash type: %s" % type(tx['hash']))
-                #tx['hash'] = str(tx['hash'])
-                tx['hash'] = str(tx['hash'].encode('utf-8').hex())
+                tx['hash'] = tx['hash'][:].encode().hex()
+                tx['params'] = str(tx['params'])
                 d.update(tx)
                 list_of_dicts.append(d)
+        logger.debug("list_of_dicts: %s" % list_of_dicts)
         #list_of_dicts = r.to_list_of_dicts()
         #cls.query.filter_by(db_id=db_id, block_id=block_id)
+
         i = insert(cls.__table__)
         i = i.values(list_of_dicts)
         db.session.execute(i)
