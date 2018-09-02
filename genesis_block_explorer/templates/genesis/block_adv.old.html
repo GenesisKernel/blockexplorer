@@ -55,6 +55,7 @@
       var table = $('#genesis_block').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": {
             "url": "/dt/genesis/database/{{ db_id }}/block/{{ block_id }}",
             "data": function(d) {
@@ -79,6 +80,7 @@
         "order": [[ 0, "desc" ]],
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/genesis/database/{{ db_id }}/transactions_by_block/{{ block_id }}",
         "columns": [
             {% for col_ind in range(0, t_columns_num) %}

@@ -45,6 +45,7 @@
         "order": [[ 0, "desc" ]],
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/genesis/database/{{ db_id }}/blocks",
         "columns": [
             {% for col_ind in range(0, columns_num) %}
@@ -65,6 +66,7 @@
         "order": [[ 0, "desc" ]],
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/genesis/database/{{ db_id }}/transactions",
         "columns": [
             {% for col_ind in range(0, t_columns_num) %}
