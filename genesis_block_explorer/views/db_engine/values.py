@@ -55,6 +55,9 @@ def dt_values(id):
         rowTable = DataTablesHashTime(params, query, dt_columns)
         rowTable.hash_time_post_query_process(hash_ids=[0], time_ids=5,
                                              debug_mode=True)
+    elif table.name == 'migration_history':
+        rowTable = DataTablesTime(params, query, dt_columns)
+        rowTable.time_post_query_process(time_ids=2, debug_mode=True)
     elif table.name == 'transactions':
         rowTable = DataTablesHashData(params, query, dt_columns)
         rowTable.hash_data_post_query_process(hash_ids=[0], data_ids=1,

@@ -19,8 +19,8 @@ class DataTablesTimeMixin:
                     #logger.debug("type(row): %s, row: %s" % (type(row), row))
                     new_cols = set()
                     for col_id, val in row.items():
-                        if col_id in hash_ids:
-                            val = decode_hash(val)
+                        if col_id in time_ids:
+                            val = decode_time(val)
                         new_cols.add((col_id, val))
                     results.append(dict(new_cols))
                 self.results = results
