@@ -46,6 +46,9 @@ class DataTablesBlocks(DataTablesExt):
             logger.warning("eco_ids isn't set")
         logger.debug("blocks_post_query_process eco_ids: %s" % eco_ids)
 
+        parse_blocks = kwargs('parse_blocks', False)
+        logger.debug("parse_blocks: %s" % parse_blocks)
+
         if self.results:
             if kwargs.get('debug_mode', False) == True:
                 results = []
@@ -62,7 +65,10 @@ class DataTablesBlocks(DataTablesExt):
                             parse_error = False
                             try:
                                 logger.error("val: %s" % val)
-                                p = parse_block(val)
+                                if parse_blocks:
+                                    p = parse_block(val)
+                                else:
+                                    parse_error = True
                             except ExtraData as e:
                                 parse_error = True
                             except UnpackValueError as e:

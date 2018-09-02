@@ -10,12 +10,11 @@ from ...db import db
 from ...logging import get_logger
 from ...models.db_engine.session import SessionManager
 from ...models.db_engine.engine import merge_two_dicts
-from ...utils import is_number
-from ...client import get_block
+from ...utils import is_number, ts_to_fmt_time
+from ...blockchain import get_block, get_block_data
 
 from .explicit import get_sys_param_model, BlockChain, TransactionsStatus
 
-from ...views.utils import ts_to_fmt_time
 from genesis_block_chain.parser.common_parse_data_full import parse_block
 from genesis_block_chain.parser.common import Parser
 
@@ -125,6 +124,7 @@ class FullNode(db.Model):
         model = get_sys_param_model(backend_features=sm.get_be_features(db_id))
         data = model.query.with_session(sm.get(db_id)).filter_by(name='full_nodes').one().value
         data = parse_full_nodes_rec(data, add_db_id=db_id)
+        logger.debug("FULL NODES DDDDDDDDDDDDAATA: %s" % data)
         cls.query.filter_by(db_id=db_id)
         i = insert(cls.__table__)
         i = i.values(data)
@@ -282,34 +282,37 @@ class BlockTransactionsHelper(db.Model):
     db_id = db.Column(db.Integer)
     block_id = db.Column(db.Integer)
     hash = db.Column(db.String)
+    key_id = db.Column(db.String)
     contract_name = db.Column(db.String)
     params = db.Column(db.String)
-    key_id = db.Column(db.String)
+
+    @classmethod
+    def update_from_sys_param(cls, db_id=1):
+        model = get_sys_param_model(backend_features=sm.get_be_features(db_id))
+        data = model.query.with_session(sm.get(db_id)).filter_by(name='full_nodes').one().value
+        data = parse_full_nodes_rec(data, add_db_id=db_id)
+        cls.query.filter_by(db_id=db_id)
+        i = insert(cls.__table__)
+        i = i.values(data)
+        db.session.execute(i)
 
     @classmethod
     def update_from_block(cls, **kwargs):
         db_id = kwargs.get('db_id', 1)
         block_id = kwargs.get('block_id', '')
-        show_raw_data = kwargs.get('show_raw_data', False)
-        #tx_hash_b = bytes.fromhex(tx_hash)
-        block = get_block(db_id, block_id)
-
-        d_names_titles = {
-            'hash': 'Hash',
-            'contract_name': 'Contract Name',
-            'params': 'Parameters',
-            'key_id': 'Key ID',
-        }
-        r = BlockTransactionRows(db_id=db_id, block_id=block_id)
-
-        p_data = None
-        for tx in block.txs:
-            for col_name, col_title in d_names_titles.items():
-                val = getattr(tx, col_name)
-                r.add(BlockTxItem(col_name, str(val), a="d 1 str", t=col_title))
-
-        list_of_dicts = r.to_list_of_dicts()
-        cls.query.filter_by(db_id=db_id, block_id=block_id)
+        data = get_block(db_id, block_id).to_dict(style='snake',
+                                                  struct_style='sqlalchemy') 
+        list_of_dicts = []
+        if 'transactions' in data:
+            for tx in data['transactions']:
+                d = {'db_id': db_id, 'block_id': block_id}
+                logger.debug("HHHHHHHHHHHHHHHHHH hash type: %s" % type(tx['hash']))
+                #tx['hash'] = str(tx['hash'])
+                tx['hash'] = str(tx['hash'].encode('utf-8').hex())
+                d.update(tx)
+                list_of_dicts.append(d)
+        #list_of_dicts = r.to_list_of_dicts()
+        #cls.query.filter_by(db_id=db_id, block_id=block_id)
         i = insert(cls.__table__)
         i = i.values(list_of_dicts)
         db.session.execute(i)

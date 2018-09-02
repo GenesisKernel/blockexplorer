@@ -38,7 +38,7 @@
       <table id="genesis_block_transactions" class="display" cellspacing="0" width="100%">
         <thead>
           <tr>
-            {% for column_name in column_names %}
+            {% for column_name in bt_column_names %}
             <th>{{ column_name }}</th>
             {% endfor %}
           </tr>
@@ -103,7 +103,7 @@
         "paging": false,
         "bInfo" : false,
         "columns": [
-            {% for col_ind in range(0, columns_num) %}
+            {% for col_ind in range(0, bt_columns_num) %}
             {
                 "data": {{ col_ind }},
                 "render": function ( data, type, row, meta ) {

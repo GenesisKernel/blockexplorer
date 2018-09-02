@@ -2,7 +2,7 @@ from decimal import Decimal
 import re
 import collections
 
-from ...views.utils import ts_to_fmt_time
+from ...utils import ts_to_fmt_time
 
 class Error(Exception):
     pass

@@ -11,13 +11,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from ...db import db
 
 from ...models.genesis.explicit import BlockChain
-from ...models.genesis.helpers import BlockHelper, BlockTransactionsHelper
+from ...models.genesis.helpers import BlockTransactionsHelper
 from ...models.db_engine.session import SessionManager
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from ...datatables import DataTablesExt
-
-from ...client import *
 
 logger = get_logger(app)
 sm = SessionManager(app=app)
@@ -31,8 +29,7 @@ def block_transactions(id, block_id):
     if show_raw_data == "False":
         show_raw_data = False
     model = BlockTransactionsHelper
-    column_ids = ['db_id', 'block_id', 'hash', 'contract_name', 'params',
-                  'key_id']
+    column_ids = ['hash', 'key_id', 'contract_name', 'params']
     columns = [getattr(model, col_id) for col_id in column_ids]
     dt_columns = [ColumnDT(m) for m in columns]
     BlockTransactionsHelper.update_from_block(db_id=id, block_id=block_id,                                                    show_raw_data=show_raw_data)
