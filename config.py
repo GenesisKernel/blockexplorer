@@ -20,6 +20,14 @@ DB_ENGINE_DISCOVERY_MAP = {
     'genesis1': { 'backend_version': 20180830 },
 }
 
+BACKEND_API_URLS = {
+    1: 'http://localhost:17301/api/v2',
+    2: 'http://localhost:17302/api/v2',
+    3: 'http://localhost:17303/api/v2',
+    4: 'http://localhost:17304/api/v2',
+    5: 'http://localhost:17305/api/v2',
+}
+
 BACKEND_VERSION_FEATURES_MAP = {
     20180830: {
         'github-branch': 'master',

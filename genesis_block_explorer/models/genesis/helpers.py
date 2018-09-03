@@ -11,7 +11,10 @@ from ...logging import get_logger
 from ...models.db_engine.session import SessionManager
 from ...models.db_engine.engine import merge_two_dicts
 from ...utils import is_number, ts_to_fmt_time
-from ...blockchain import get_block, get_block_data
+from ...blockchain import (
+    get_block, get_block_data,
+    get_detailed_block, get_detailed_block_data,
+)
 
 from .explicit import get_sys_param_model, BlockChain, TransactionsStatus
 
@@ -281,8 +284,10 @@ class BlockTransactionsHelper(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     db_id = db.Column(db.Integer)
     block_id = db.Column(db.Integer)
-    hash = db.Column(db.String)
+    time = db.Column(db.Integer)
+    type = db.Column(db.Integer)
     key_id = db.Column(db.String)
+    hash = db.Column(db.String)
     contract_name = db.Column(db.String)
     params = db.Column(db.String)
 
@@ -290,8 +295,10 @@ class BlockTransactionsHelper(db.Model):
     def update_from_block(cls, **kwargs):
         db_id = kwargs.get('db_id', 1)
         block_id = kwargs.get('block_id', '')
-        data = get_block(db_id, block_id).to_dict(style='snake',
+        data = get_detailed_block(db_id, block_id).to_dict(style='snake',
                                                   struct_style='sqlalchemy') 
+        #data = get_block(db_id, block_id).to_dict(style='snake',
+        #                                          struct_style='sqlalchemy') 
         list_of_dicts = []
         if 'transactions' in data:
             for tx in data['transactions']:
@@ -301,8 +308,6 @@ class BlockTransactionsHelper(db.Model):
                 d.update(tx)
                 list_of_dicts.append(d)
         logger.debug("list_of_dicts: %s" % list_of_dicts)
-        #list_of_dicts = r.to_list_of_dicts()
-        #cls.query.filter_by(db_id=db_id, block_id=block_id)
 
         i = insert(cls.__table__)
         i = i.values(list_of_dicts)

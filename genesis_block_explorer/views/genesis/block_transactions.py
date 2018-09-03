@@ -29,7 +29,7 @@ def block_transactions(id, block_id):
     if show_raw_data == "False":
         show_raw_data = False
     model = BlockTransactionsHelper
-    column_ids = ['hash', 'key_id', 'contract_name', 'params']
+    column_ids = ['time', 'type', 'key_id', 'hash', 'contract_name', 'params']
     columns = [getattr(model, col_id) for col_id in column_ids]
     dt_columns = [ColumnDT(m) for m in columns]
     BlockTransactionsHelper.update_from_block(db_id=id, block_id=block_id,                                                    show_raw_data=show_raw_data)
