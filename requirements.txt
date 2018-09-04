@@ -22,3 +22,4 @@ docopt
 autopep8
 git+https://github.com/blitzstern5/genesis-blockchain-tools
 git+https://github.com/blitzstern5/genesis-blockchain-api-client
+nose
