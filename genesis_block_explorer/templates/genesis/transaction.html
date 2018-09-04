@@ -29,6 +29,7 @@
       var table = $('#genesis_transaction').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": {
             "url": "/dt/genesis/database/{{ db_id }}/transaction/{{ tx_hash }}",
             "data": function(d) {

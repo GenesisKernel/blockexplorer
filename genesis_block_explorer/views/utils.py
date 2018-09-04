@@ -1,4 +1,3 @@
-from datetime import datetime, timezone
 import re
 
 try:
@@ -6,19 +5,11 @@ try:
 except:
     from urllib.parse import urlparse
 
-
 from flask import request, current_app as app
 
 from ..logging import get_logger
 
 logger = get_logger(app)
-
-def ts_to_fmt_time(ts, utc=False):
-    fmt = '%d/%b/%Y %H:%M:%S'
-    if utc:
-        return datetime.utcfromtimestamp(int(ts)).strftime(fmt)
-    else:
-        return datetime.fromtimestamp(int(ts)).strftime(fmt)
 
 def get_db_id_from_request():
     logger.debug("request.url: %s" % request.url)

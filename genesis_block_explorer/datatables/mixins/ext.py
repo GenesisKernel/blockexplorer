@@ -2,14 +2,12 @@ import six
 
 from flask import current_app as app
 
-from datatables import ColumnDT, DataTables
-
-from .utils import is_number
-from .logging import get_logger
+from ...utils import is_number
+from ...logging import get_logger
 
 logger = get_logger(app)
 
-class DataTablesExt(DataTables):
+class DataTablesExtMixin:
     def prepare_col_ids(self, **kwargs):
         col_ids = kwargs.get('col_ids')
         if not col_ids:

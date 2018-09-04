@@ -2,7 +2,7 @@ from decimal import Decimal
 import re
 import collections
 
-from ...views.utils import ts_to_fmt_time
+from ...utils import ts_to_fmt_time
 
 class Error(Exception):
     pass
@@ -77,6 +77,28 @@ class TxItem(Item):
         self.db_id = kwargs.get('db_id', 1)
         self.tx_hash = kwargs.get('tx_hash', '')
         self._item_type = 'TxItem'
+
+class BlockTxItem(Item):
+
+    def print(self):
+        print(str(self))
+        #print("name: %s src: %s raw: %s type: %s value: %s title: %s db_id: %d block_id: %s" % (self.name, self.src, self.raw, self.type, self.value, self.title, self.db_id, self.block_id))
+
+    def to_dict(self):
+        return dict(db_id=self.db_id, block_id=self.block_id,
+                    hash=self.hash, contract_name=self.contract_name,
+                    params=self.params, key_id=self.key_id)
+
+    def __init__(self, *args, **kwargs):
+        super(BlockTxItem, self).__init__(*args, **kwargs)
+        self.db_id = kwargs.get('db_id', 1)
+        self.block_id = kwargs.get('block_id', '')
+        self.hash = kwargs.get('hash', '')
+        self.contract_name = kwargs.get('contract_name', '')
+        self.params = kwargs.get('params', '')
+        self.key_id = kwargs.get('key_id', '')
+        self._item_type = 'BlockTxItem'
+
 
 
 class ItemCreationError(Error):
@@ -212,6 +234,23 @@ class TransactionRows(Rows):
         i.tx_hash = self.tx_hash
         self.data.append(i)
 
+class BlockTransactionRows(Rows):
+
+    def __init__(self, **kwargs):
+        self.db_id = kwargs.get('db_id', 1)
+        self.block_id = kwargs.get('block_id', '')
+        self.data = []
+
+    def add(self, i):
+        try:
+            raise i    
+        except ItemCreationError as e:
+            return 
+        except TypeError:
+            pass
+        i.db_id = self.db_id
+        i.block_id = self.block_id
+        self.data.append(i)
 
 class BlockRows(Rows):
 
