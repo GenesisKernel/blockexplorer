@@ -54,7 +54,14 @@ class ParamModel(db.Model):
         return list_of_dicts
 
     @classmethod
-    def update_from_param_set(cls, **kwargs):
-        pass
+    def update_from_param_set(cls, param_set, **kwargs):
+        list_of_dicts = []
+        for key, value in param_set.items():
+            list_of_dicts.append({'key': key, 'value': value})
+        logger.debug("list_of_dicts: %s" % list_of_dicts)
+        i = insert(cls.__table__)
+        i = i.values(list_of_dicts)
+        db.session.execute(i)
+        return list_of_dicts
 
 

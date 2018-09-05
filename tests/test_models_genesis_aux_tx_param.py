@@ -7,6 +7,7 @@ from genesis_blockchain_api_client.blockchain.block import (
 )
 from genesis_blockchain_api_client.blockchain.tx import Tx
 from genesis_blockchain_api_client.blockchain.tx.param import Param
+from genesis_blockchain_api_client.blockchain.tx.param_set import ParamSet
 from genesis_block_explorer.db import db
 from genesis_block_explorer.models.genesis.aux.tx import TxModel
 from genesis_block_explorer.models.genesis.aux.tx.param import ParamModel
@@ -36,12 +37,26 @@ def test_update_from_param():
     p0v = td[p0n]
     pd = {p0n: p0v}
     app = create_test_app()
-    assert len(TxModel.query.all()) == 0
+    assert len(ParamModel.query.all()) == 0
     p = Param(**pd)
     ParamModel.update_from_param(p)
     assert len(ParamModel.query.all()) == 1
     pm = ParamModel.query.all()[0]
     try:
         ParamModel.update_from_param(p)
+    except exc.IntegrityError:
+        pass
+
+@with_setup(my_setup, my_teardown)
+def test_update_from_param_set():
+    pd = get_block_data_from_dict(d3[0])['transactions'][0]['params']
+    app = create_test_app()
+    assert len(ParamModel.query.all()) == 0
+    ps = ParamSet(**pd)
+    ParamModel.update_from_param(ps)
+    assert len(ParamModel.query.all()) == len(pd)
+    pm = ParamModel.query.all()[0]
+    try:
+        ParamModel.update_from_param_set(ps)
     except exc.IntegrityError:
         pass
