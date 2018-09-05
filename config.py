@@ -12,7 +12,7 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers'  : 'sqlite:///:memory:',
-    'genesis_cache': 'sqlite:///' + os.path.join(basedir, 'genesis_cache.sqlite'),
+    'genesis_aux': 'sqlite:///' + os.path.join(basedir, 'genesis_aux.sqlite'),
     'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
 }
 
