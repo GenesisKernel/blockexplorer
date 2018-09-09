@@ -27,25 +27,23 @@ from .....blockchain import (
 logger = get_logger(app) 
 sm = SessionManager(app=app)
 
-class Error(Exception):
-    pass
+#from . import ParamModel
 
 class ParamModel(db.Model):
 
     __tablename__ = 'tx_params'
-    __bind_key__ = 'genesis_aux'
+    #__bind_key__ = 'genesis_aux'
     #__table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
-    #tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'))
+    tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'))
 
     # main
-    key = db.Column(db.String)
+    name = db.Column(db.String)
     value = db.Column(db.Text)
 
     @classmethod
-    def update_from_param(cls, param, **kwargs):
-        data = {'key': param.name, 'value': param.value}
+    def update_from_dict(cls, data):
         list_of_dicts = [data]
         logger.debug("list_of_dicts: %s" % list_of_dicts)
         i = insert(cls.__table__)
@@ -54,11 +52,15 @@ class ParamModel(db.Model):
         return list_of_dicts
 
     @classmethod
+    def update_from_param(cls, param, **kwargs):
+        data = {'name': param.oname, 'value': param.value}
+        return cls.update_from_dict(data)
+
+    @classmethod
     def update_from_param_set(cls, param_set, **kwargs):
-        list_of_dicts = []
-        for key, value in param_set.items():
-            list_of_dicts.append({'key': key, 'value': value})
-        logger.debug("list_of_dicts: %s" % list_of_dicts)
+        list_of_dicts = param_set.to_list(style='camel')
+        #for param in data:
+        #    cls.update_from_param(param)
         i = insert(cls.__table__)
         i = i.values(list_of_dicts)
         db.session.execute(i)

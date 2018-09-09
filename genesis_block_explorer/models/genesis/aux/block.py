@@ -1,6 +1,4 @@
-#import json
-
-#from decimal import Decimal
+import datetime
 
 from sqlalchemy.sql import table, column, select, update, insert
 
@@ -19,8 +17,17 @@ from ....blockchain import (
     get_detailed_block, get_detailed_block_data,
 )
 
+def get_tx_and_tx_params_models(bind_key=None):
+    from .tx import TxModel
+    from .tx.param import ParamModel
+    if bind_key:
+        TxModel.__bind_key__ = bind_key
+        ParamModel.__bind_key__ = bind_key
+    return TxModel, ParamModel
+
 logger = get_logger(app) 
 sm = SessionManager(app=app)
+get_tx_and_tx_params_models()
 
 class Error(Exception):
     pass
@@ -28,12 +35,13 @@ class Error(Exception):
 class BlockModel(db.Model):
 
     __tablename__ = 'blocks'
-    __bind_key__ = 'genesis_aux'
+    #__bind_key__ = 'genesis_aux'
     #__table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
 
     #header
+    h_block_id = db.Column(db.Integer)
     h_time = db.Column(db.Integer)
     h_ecosystem_id = db.Column(db.Integer)
     h_key_id = db.Column(db.Integer)
@@ -59,18 +67,15 @@ class BlockModel(db.Model):
     sys_update = db.Column(db.Boolean)
     stop_count = db.Column(db.Integer)
     stop_count = db.Column(db.Integer)
-    transactions = db.Column(db.String)
+    transactions = db.relationship('TxModel', uselist=True,
+                             backref=db.backref('blocks'))
 
     @classmethod
-    def update_from_block(cls, block, **kwargs):
-        data = block.to_dict(style='snake', struct_style='sqlalchemy')
+    def prepare_from_dict(cls, data, **kwargs):
         block_id = int(data.pop('block_id'))
         data.update({'id': block_id})
         header = data.pop('header')
-        txs = data.pop('transactions')
-        #print("data: %s" % data)
-        #print("txs: %s" % txs)
-        #print("header: %s" % header)
+        txs_data = data.pop('transactions')
         h = {}
         for key, val in header.items():
             h['h_' + key] = val
@@ -79,23 +84,48 @@ class BlockModel(db.Model):
                     h['h_ukey_id'] = int(val) & 0xffffffffffffffff
                 else:
                     h['h_ukey_id'] = 0
-        #print("h: %s" % h)
         if 'time' in data:
-            time_ts = data.pop('time')
-            time_dt = time_ts
+            time_ts = int(data.pop('time'))
+            time_dt = datetime.datetime.fromtimestamp(time_ts)
         else:
             time_ts = 0
-            time_dt = time_ts
-        #data['transactions'] = str(txs)
-        list_of_dicts = data
-        logger.debug("list_of_dicts: %s" % list_of_dicts)
-        i = insert(cls.__table__)
-        i = i.values(list_of_dicts)
-        db.session.execute(i)
-        return list_of_dicts
+            time_dt = datetime.datetime.fromtimestamp(time_ts)
+        data['time_ts'] = time_ts
+        data['time_dt'] = time_dt
+        data.update(h)
+        return data, txs_data
 
     @classmethod
-    def update_from_block_set(cls, **kwargs):
-        pass
+    def update_from_dict(cls, data, **kwargs):
+        TxModel, ParamModel = get_tx_and_tx_params_models(cls.__bind_key__)
+        print("BlockModel.update_from_dict cls.__bind__key__: %s" % cls.__bind_key__)
+        print("BlockModel.update_from_dict TxModel.__bind__key__: %s" % TxModel.__bind_key__)
+        print("BlockModel.update_from_dict ParamModel.__bind__key__: %s" % ParamModel.__bind_key__)
+        data, txs_data = cls.prepare_from_dict(data)
+        block = cls(**data)
+        db.session.add(block)
+        txs = []
+        for tx_data in txs_data:
+            tx = TxModel.update_from_dict(tx_data, db_session_commit_enabled=False)
+            block.transactions.append(tx)
+            txs.append(tx)
+        if kwargs.get('db_session_commit_enabled', True):
+            db.session.commit()
+        return data, txs
+
+    @classmethod
+    def update_from_block(cls, block, **kwargs):
+        data = block.to_dict(style='snake', struct_style='sqlalchemy')
+        return cls.update_from_dict(data)
+
+    @classmethod
+    def update_from_block_set(cls, block_set, **kwargs):
+        blocks_data = block_set.to_detailed_list(style='snake')
+        l = []
+        for data in blocks_data:
+            l.append(cls.update_from_dict(data, db_session_commit_enabled=False))
+        if kwargs.get('db_session_commit_enabled', True):
+            db.session.commit()
+        return l
 
 

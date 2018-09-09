@@ -14,11 +14,14 @@ from genesis_block_explorer.models.genesis.aux.tx.param import ParamModel
 
 from .blockchain_commons import d1, d3, get_txs
 
-def init_db():
-    db.create_all(bind='genesis_aux')
+def init_db(bind_key=None):
+    if bind_key:
+        TxModel.__bind_key__ = bind_key
+        ParamModel.__bind_key__ = bind_key
+    db.create_all(bind=bind_key)
 
 def my_setup():
-    init_db()
+    init_db(bind_key='genesis_aux_test')
     create_test_app()
 
 def my_teardown():
@@ -42,6 +45,9 @@ def test_update_from_param():
     ParamModel.update_from_param(p)
     assert len(ParamModel.query.all()) == 1
     pm = ParamModel.query.all()[0]
+    print("pm.name: %s, p0n: %s" % (pm.name, p0n))
+    assert pm.name == p0n
+    assert pm.value == p0v
     try:
         ParamModel.update_from_param(p)
     except exc.IntegrityError:
@@ -50,10 +56,9 @@ def test_update_from_param():
 @with_setup(my_setup, my_teardown)
 def test_update_from_param_set():
     pd = get_block_data_from_dict(d3[0])['transactions'][0]['params']
-    app = create_test_app()
     assert len(ParamModel.query.all()) == 0
     ps = ParamSet(**pd)
-    ParamModel.update_from_param(ps)
+    ParamModel.update_from_param_set(ps)
     assert len(ParamModel.query.all()) == len(pd)
     pm = ParamModel.query.all()[0]
     try:

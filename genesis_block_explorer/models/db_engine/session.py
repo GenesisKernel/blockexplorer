@@ -18,20 +18,23 @@ def create_sessions_for_engines(engines, **kwargs):
         sessions[bind_name]['session'] = sessions[bind_name]['session_class']()
     return sessions
 
-class SessionManager:
+class SessionManagerBase:
     def __init__(self, **kwargs):
         self.app = kwargs.get('app', None)
         self.engines = kwargs.get('engines', [])
         self.engines_discovered = False
         self.sessions = kwargs.get('sessions', [])
         self.sessions_created = False
-        self.database = kwargs.get('database', Database)
+        self.init_sessions_and_engines()
 
     def discover_engines(self):
-        self.engines = get_discovered_db_engines(self.app)
+        self.engines = get_discovered_db_engines(self.app,
+                 db_engine_discovery_map_name=self.db_engine_discovery_map_name)
+        logger.debug("discover_engines: %s" % self.engines)
 
     def create_sessions(self):
         self.sessions = create_sessions_for_engines(self.engines)
+        logger.debug("created sessions: %s" % self.sessions)
 
     def init_sessions_and_engines(self):
         if not self.engines_discovered:
@@ -39,12 +42,23 @@ class SessionManager:
         if not self.sessions_created:
             self.create_sessions()
 
+    def get(self, key):
+        return self.get_session(key)
+
+class SessionManager(SessionManagerBase):
+    def __init__(self, **kwargs):
+        self.db_engine_discovery_map_name = \
+            kwargs.get('db_engine_discovery_map_name',
+                       'DB_ENGINE_DISCOVERY_MAP')
+        super(SessionManager, self).__init__(**kwargs)
+        self.database = kwargs.get('database', Database)
+
     def get_db(self, db_id):
-        self.init_sessions_and_engines()
         return self.database.query.get(db_id)
 
-    def get(self, db_id):
+    def get_session(self, db_id):
         db = self.get_db(db_id)
+        logger.debug("db: %s, db.bind_name: %s" %(db, db.bind_name))
         return self.sessions[db.bind_name]['session']
 
     def get_engine(self, db_id):
@@ -61,7 +75,8 @@ class SessionManager:
     def get_be_info(self, db_id):
         db = self.get_db(db_id)
         bind_name = db.bind_name
-        return get_discovered_db_engine_info(bind_name)
+        return get_discovered_db_engine_info(bind_name,
+                 db_engine_discovery_map_name=self.db_engine_discovery_map_name)
 
     def get_be_version(self, db_id):
         db = self.get_db(db_id)
@@ -69,5 +84,6 @@ class SessionManager:
 
     def get_be_features(self, db_id):
         backend_version = self.get_be_version(db_id)
-        return get_backend_features_by_version(int(backend_version))
+        #return get_backend_features_by_version(int(backend_version))
+        return get_backend_features_by_version(backend_version)
 

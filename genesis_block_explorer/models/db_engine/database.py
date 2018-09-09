@@ -214,8 +214,16 @@ def init_db():
 
 def import_data(app, **kwargs):
     engines = kwargs.get('engines', None)
+    db_engine_discovery_map_name = kwargs.get('db_engine_discovery_map_name',
+                                              'DB_ENGINE_DISCOVERY_MAP')
     if not engines:
-        engines = get_discovered_db_engines(app)
+        #engines = get_discovered_db_engines(app)
+        engines = get_discovered_db_engines(app,
+                    db_engine_discovery_map_name=db_engine_discovery_map_name)
+        #engines2 = get_discovered_db_engines(app,
+        #           db_engine_discovery_map_name='AUX_DB_ENGINE_DISCOVERY_MAP')
+        #engines.update(engines2)
+        logger.error("engines: %s " % engines)
     for bind_name, engine in engines.items(): 
         try:
             inspector = inspect(engine)
