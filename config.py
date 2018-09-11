@@ -18,11 +18,11 @@ SQLALCHEMY_BINDS = {
 }
 
 DB_ENGINE_DISCOVERY_MAP = {
-    'genesis1': { 'backend_version': 20180830 },
+    'genesis1': { 'backend_version': '20180830' },
 }
 
 AUX_DB_ENGINE_DISCOVERY_MAP = {
-    'aux_genesis1': { 'backend_version': 20180830 },
+    'aux_genesis1': { 'backend_version': '20180830' },
 }
 
 BACKEND_API_URLS = {
