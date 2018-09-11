@@ -1,23 +1,30 @@
 from nose import with_setup
 
-from sqlalchemy import exc, inspect
+from flask import Flask, current_app
 
-from genesis_blockchain_api_client.blockchain.block import (
-    Block, get_block_id_from_dict, get_block_data_from_dict
-)
-from genesis_blockchain_api_client.blockchain.block_set import BlockSet
+from sqlalchemy import exc
+from sqlalchemy.engine.base import Engine
+from sqlalchemy.orm.session import Session
+
 from genesis_block_explorer.db import db
+from genesis_blockchain_api_client.blockchain.block import Block
+from genesis_blockchain_api_client.blockchain.block_set import BlockSet
+
+from genesis_block_explorer.models.genesis.aux.config import (
+    update_aux_db_engine_discovery_map
+)
 from genesis_block_explorer.models.genesis.aux.block import BlockModel
+from genesis_block_explorer.models.genesis.aux.tx import TxModel
+from genesis_block_explorer.models.genesis.aux.tx.param import ParamModel
+from genesis_block_explorer.models.genesis.aux.session import (
+    AuxSessionManager, 
+    DbEngineMapIsEmptyError
+)
 
 from .blockchain_commons import d1, d3, d4, get_txs
 
-BlockModel.__bind_key__ = 'genesis_aux_test'
-
-def init_db(bind_key=None):
-    if bind_key:
-        BlockModel.__bind_key__ = bind_key
-    print("STARTING create all")
-    db.create_all(bind=bind_key)
+def init_db():
+    db.create_all()
 
 def create_test_app():
     from genesis_block_explorer.app import create_app
@@ -25,45 +32,64 @@ def create_test_app():
     app.app_context().push()
     return app
 
+def create_tables(models, engine, recreate_if_exists=True):
+    for model in models:
+        if recreate_if_exists:
+            try:
+                model.__table__.drop(engine)
+            except exc.OperationalError as e:
+                pass
+
+        try:
+            model.__table__.create(engine)
+        except exc.OperationalError as e:
+            print("Can'n create table for model %s, error: %s" % (model, e))
+
 def my_setup():
-    bind_key = 'genesis_aux_test'
+    aux_prefix = 'test_aux_'
     app = create_test_app()
+    new_map = update_aux_db_engine_discovery_map(app, force_update=True,
+                                       aux_db_engine_name_prefix='test_aux_')
     db.init_app(app)
-    init_db(bind_key=bind_key)
+    with app.app_context():
+        init_db()
 
 def my_teardown():
     pass
 
 @with_setup(my_setup, my_teardown)
-def test_create_all():
-    print("STARTING test_create_all")
-    assert BlockModel.__bind_key__ == 'genesis_aux_test'
-    db.create_all(bind='genesis_aux_test')
-    #bind_name conn_uri = app.config['SQLALCHEMY_DATABASE_URI']
-    #conn_uri = app.config['SQLALCHEMY_BINDS'][bind_name]
-    #engines[bind_name] = create_engine(conn_uri, **engine_options)
-    inspector = inspect(db.engine)
-    tables = inspector.get_table_names()
-    print("tables: %s" % tables)
-    assert 'blocks' in tables
+def test_get_bind_name():
+    app = create_test_app()
+    new_map = update_aux_db_engine_discovery_map(app, force_update=True,
+                                       aux_db_engine_name_prefix='test_aux_')
+    sm = AuxSessionManager(app=app)
+    sn = 1
+    if len(app.config['AUX_DB_ENGINE_DISCOVERY_MAP']) == 0:
+        try:
+            sm.get_bind_name(sn)
+        except DbEngineMapIsEmptyError as e:
+            print("AUX_DB_ENGINE_DISCOVERY_MAP is empty")
+            return
+    assert sm.get_bind_name(sn) == tuple(app.config['AUX_DB_ENGINE_DISCOVERY_MAP'].keys())[0]
 
 @with_setup(my_setup, my_teardown)
-def nontest_update_from_block():
-    len_first = len(BlockModel.query.all())
+def test_update_from_block():
+    app = create_test_app()
+    new_map = update_aux_db_engine_discovery_map(app, force_update=True,
+                                       aux_db_engine_name_prefix='test_aux_')
+    sm = AuxSessionManager(app=app)
+    sn = 1
+    create_tables([BlockModel, TxModel, ParamModel], sm.get_engine(sn))
+    if len(app.config['AUX_DB_ENGINE_DISCOVERY_MAP']) == 0:
+        try:
+            sm.get(sn)
+        except DbEngineMapIsEmptyError as e:
+            print("AUX_DB_ENGINE_DISCOVERY_MAP is empty")
+            return
+    len_first = len(BlockModel.query.with_session(sm.get(sn)).all())
     block = Block(b64decode_hashes=True, from_detailed_dict=d3[0])
-    BlockModel.update_from_block(block)
+    BlockModel.update_from_block(block, session=sm.get(sn))
     try:
-        BlockModel.update_from_block(block)
+        BlockModel.update_from_block(block, session=sm.get(sn))
     except exc.IntegrityError:
         pass
-
-@with_setup(my_setup, my_teardown)
-def nontest_update_from_block_set():
-    len_first = len(BlockModel.query.all())
-    block_set = BlockSet(b64decode_hashes=True, from_detailed_dict=d4)
-    BlockModel.update_from_block_set(block_set)
-    try:
-        BlockModel.update_from_block_set(block_set)
-    except exc.IntegrityError:
-        pass
-

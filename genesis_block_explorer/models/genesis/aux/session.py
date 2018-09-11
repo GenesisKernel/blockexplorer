@@ -1,5 +1,4 @@
 from flask import current_app as app
-#from .engine import db_engine.engine
 
 from ....logging import get_logger
 from ...db_engine.session import SessionManager, SessionManagerBase

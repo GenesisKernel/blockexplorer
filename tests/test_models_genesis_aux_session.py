@@ -38,6 +38,7 @@ def test_get_bind_name():
         try:
             sm.get_bind_name(1)
         except DbEngineMapIsEmptyError as e:
+            print("AUX_DB_ENGINE_DISCOVERY_MAP is empty")
             return
     assert sm.get_bind_name(1) == tuple(app.config['AUX_DB_ENGINE_DISCOVERY_MAP'].keys())[0]
 
@@ -49,6 +50,7 @@ def test_get_engine():
         try:
             sm.get_engine(1)
         except DbEngineMapIsEmptyError as e:
+            print("AUX_DB_ENGINE_DISCOVERY_MAP is empty")
             return
     assert isinstance(sm.get_engine(1), Engine)
 
@@ -60,6 +62,7 @@ def test_get_session():
         try:
             sm.get_session(1)
         except DbEngineMapIsEmptyError as e:
+            print("AUX_DB_ENGINE_DISCOVERY_MAP is empty")
             return
     assert isinstance(sm.get_session(1), Session)
     assert sm.get_session(1) == sm.get_session(1)
