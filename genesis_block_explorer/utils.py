@@ -12,6 +12,9 @@ def is_number(s):
     except ValueError:
         return False
 
+def is_string(s):
+    return isinstance(s, six.string_types)
+
 def semirepr(value):
     if isinstance(value, six.string_types):
         return value
