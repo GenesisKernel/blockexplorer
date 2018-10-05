@@ -10,7 +10,14 @@ from ...models.db_engine.model import (
     get_model_data_by_table_id, automapped_classes
 )
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
-from ...datatables import DataTablesExt
+from ...datatables import (
+    DataTablesExt,
+    DataTablesHash,
+    DataTablesTime,
+    DataTablesHashData,
+    DataTablesHashDataTime,
+    DataTablesHashTime,
+)
 
 logger = get_logger(app)
 
@@ -19,7 +26,8 @@ def values(id):
     table, model, model_name = get_model_data_by_table_id(id)
     column_names = model.__table__.columns.keys()
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('db_engine/values.html', project='values',
+    return render_template('db_engine/values.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             valid_db_id=valid_db_id,
@@ -38,5 +46,35 @@ def dt_values(id):
     t = (getattr(model, cn) for cn in columns.keys())
     query = db.session.query(*t) 
     params = request.args.to_dict()
-    rowTable = DataTablesExt(params, query, dt_columns)
+    logger.debug("table.name: %s" % table.name)
+    if table.name == 'log_transactions' or table.name == 'transactions_status':
+        rowTable = DataTablesHashTime(params, query, dt_columns)
+        rowTable.hash_time_post_query_process(hash_ids=[0], time_ids=1,
+                                             debug_mode=True)
+    elif table.name == 'info_block':
+        rowTable = DataTablesHashTime(params, query, dt_columns)
+        rowTable.hash_time_post_query_process(hash_ids=[0], time_ids=5,
+                                             debug_mode=True)
+    elif table.name == 'migration_history':
+        rowTable = DataTablesTime(params, query, dt_columns)
+        rowTable.time_post_query_process(time_ids=2, debug_mode=True)
+    elif table.name == 'transactions':
+        rowTable = DataTablesHashData(params, query, dt_columns)
+        rowTable.hash_data_post_query_process(hash_ids=[0], data_ids=1,
+                                             debug_mode=True)
+    elif table.name == 'rollback_tx':
+        rowTable = DataTablesHash(params, query, dt_columns)
+        rowTable.hash_post_query_process(hash_ids=[2], debug_mode=True)
+    elif table.name == 'block_chain':
+        rowTable = DataTablesHashDataTime(params, query, dt_columns)
+        rowTable.hash_data_time_post_query_process(hash_ids=[1,2], data_ids=3,
+                                                   time_ids=7, debug_mode=True)
+    elif table.name == 'queue_tx' or table.name == 'queue_block':
+        rowTable = DataTablesHash(params, query, dt_columns)
+        rowTable.hash_post_query_process(hash_ids=[0], debug_mode=True)
+    elif table.name == 'my_node_keys':
+        rowTable = DataTablesTime(params, query, dt_columns)
+        rowTable.time_post_query_process(time_ids=6, debug_mode=True)
+    else:
+        rowTable = DataTablesExt(params, query, dt_columns)
     return jsonify(rowTable.output_result())

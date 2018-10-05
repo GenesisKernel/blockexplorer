@@ -16,7 +16,8 @@ def tables(id):
     database = Database.query.get(id)
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
     column_names = ['ID', 'Name', 'Values/Columns']
-    return render_template('db_engine/tables.html', project='tables',
+    return render_template('db_engine/tables.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             valid_db_id=valid_db_id,
                             db_name=database.name, db_id=database.id,
                             columns_values_ind=2,

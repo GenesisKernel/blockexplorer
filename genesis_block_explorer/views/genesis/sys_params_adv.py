@@ -16,7 +16,7 @@ from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from ...datatables import DataTablesExt
 
-from ..utils import ts_to_fmt_time
+from ...utils import ts_to_fmt_time
 
 from genesis_block_chain.parser.common_parse_data_full import parse_block
 
@@ -31,7 +31,8 @@ def sys_params_adv(id):
     fn_column_names = ['TCP Address', 'TCP Port', 'API URL', 'Key ID',
                     'Public Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/sys_params_adv.html', project='values',
+    return render_template('genesis/sys_params_adv.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             column_names=column_names,

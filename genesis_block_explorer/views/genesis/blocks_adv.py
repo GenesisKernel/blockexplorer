@@ -46,6 +46,9 @@ class DataTablesBlocks(DataTablesExt):
             logger.warning("eco_ids isn't set")
         logger.debug("blocks_post_query_process eco_ids: %s" % eco_ids)
 
+        parse_blocks = kwargs('parse_blocks', False)
+        logger.debug("parse_blocks: %s" % parse_blocks)
+
         if self.results:
             if kwargs.get('debug_mode', False) == True:
                 results = []
@@ -62,7 +65,10 @@ class DataTablesBlocks(DataTablesExt):
                             parse_error = False
                             try:
                                 logger.error("val: %s" % val)
-                                p = parse_block(val)
+                                if parse_blocks:
+                                    p = parse_block(val)
+                                else:
+                                    parse_error = True
                             except ExtraData as e:
                                 parse_error = True
                             except UnpackValueError as e:
@@ -74,7 +80,7 @@ class DataTablesBlocks(DataTablesExt):
                                 raise e
 
                             if parse_error:
-                                p_data['key_id'] = 'Parse Error'
+                                p_data['key_id'] = ''
                             else:
                                 if hasattr(p, 'block_data'):
                                     if 'key_id' in p.block_data:
@@ -120,7 +126,8 @@ def blocks_adv(id):
     t_column_names = ['Time', 'Sender Key ID', 'Ecosystem ID',
                     'Block ID', 'Hash', 'Type', 'Error']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/blocks_adv.html', project='values',
+    return render_template('genesis/blocks_adv.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             table_id=table.id, table_name=table.name,
                             db_id=table.database.id,
                             db_name=table.database.name,

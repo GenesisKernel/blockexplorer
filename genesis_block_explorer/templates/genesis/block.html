@@ -29,6 +29,7 @@
       var table = $('#genesis_block').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": {
             "url": "/dt/genesis/database/{{ db_id }}/block/{{ block_id }}",
             "data": function(d) {

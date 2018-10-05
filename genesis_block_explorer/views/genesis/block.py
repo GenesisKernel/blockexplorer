@@ -26,7 +26,8 @@ def block(id, block_id):
     model = BlockHelper 
     column_names = ['Title', 'Value']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/block.html', project='values',
+    return render_template('genesis/block.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             block_id=block_id,

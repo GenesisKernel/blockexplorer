@@ -65,7 +65,8 @@ def ecosystem_members(id, ecosystem_id):
     es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
     column_names = ['Key ID', 'Amount', 'Public Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/ecosystem_members.html', project='values',
+    return render_template('genesis/ecosystem_members.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             ecosystem_id=es.id,
                             db_id=id,
                             valid_db_id=valid_db_id,

@@ -29,6 +29,7 @@
       var table = $('#db_engine_tables').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/db-engine/database/{{ db_id }}/tables",
         "columns": [
             {% for col_ind in range(0, columns_num) %}

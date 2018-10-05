@@ -61,7 +61,8 @@ class DataTablesEcosystems(DataTablesExt):
 def ecosystems(id):
     column_names = ['ID', 'Members']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/ecosystems.html', project='values',
+    return render_template('genesis/ecosystems.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             db_id=id,
                             valid_db_id=valid_db_id,
                             column_names=column_names,

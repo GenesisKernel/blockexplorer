@@ -28,6 +28,7 @@
       var table = $('#migration_history').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "{{ url_for('dt_migration_history') }}",
       });
     });

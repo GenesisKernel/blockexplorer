@@ -29,6 +29,7 @@
       var table = $('#genesis_full_nodes').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/genesis/database/{{ db_id }}/full_nodes",
         "columns": [
             {% for col_ind in range(0, columns_num) %}

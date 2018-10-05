@@ -31,7 +31,8 @@ def ecosystem_params(id, ecosystem_id):
     es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
     column_names = ['Name', 'Value', 'Conditions']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
-    return render_template('genesis/ecosystem_params.html', project='values',
+    return render_template('genesis/ecosystem_params.html',
+                            project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             ecosystem_id=es.id,
                             db_id=id,
                             valid_db_id=valid_db_id,
