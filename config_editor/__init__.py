@@ -51,7 +51,7 @@ class ConfigParsed:
 
     def add_url(self, name, value):
         for be_api_url in self.find_be_api_urls():
-            _name = ast.Str(s=name)
+            _name = ast.Num(n=int(name))
             _value = ast.Str(s=value)
             be_api_url.value.keys.append(_name)
             be_api_url.value.values.append(_value)
