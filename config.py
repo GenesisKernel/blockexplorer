@@ -1,7 +1,7 @@
 
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
-PRODUCT_BRAND_NAME = 'Apla'
+PRODUCT_BRAND_NAME = 'Genesis'
 CSRF_ENABLED = True
 SECRET_KEY = 'TWBt-1Cuz-GPtN-3vm2'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
@@ -9,20 +9,11 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers': 'sqlite:///:memory:',
-    'genesis_cache': (
-        'sqlite:///' +
-        os.path.join(
-            basedir,
-            'genesis_cache.sqlite')),
-    'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1'}
-DB_ENGINE_DISCOVERY_MAP = {'genesis1': {'backend_version': 20180830}}
+}
+DB_ENGINE_DISCOVERY_MAP = {
+}
 BACKEND_API_URLS = {
-    1: 'http://localhost:17301/api/v2',
-    2: 'http://localhost:17302/api/v2',
-    3: 'http://localhost:17303/api/v2',
-    4: 'http://localhost:17304/api/v2',
-    5: 'http://localhost:17305/api/v2',
-    '6': 'http://localhost:17301/api/v2'}
+}
 BACKEND_VERSION_FEATURES_MAP = {
     20180830: {
         'github-branch': 'master',
