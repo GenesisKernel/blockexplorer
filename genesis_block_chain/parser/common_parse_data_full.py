@@ -168,6 +168,8 @@ def get_from_nested_dict(src_dict, *args):
     for arg in args:
         try:
             value = value[arg]
+        except TypeError as e:
+            return
         except KeyError as e:
             return
     return value
