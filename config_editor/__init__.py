@@ -39,12 +39,22 @@ class ConfigParsed:
     def find_db_engine_discovery_map(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'DB_ENGINE_DISCOVERY_MAP']
 
+    def find_be_api_urls(self):
+        return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'BACKEND_API_URLS']
+
     def add_bind(self, name, value):
         for sqla_bind in self.find_sqla_binds():
             _name = ast.Str(s=name)
             _value = ast.Str(s=value)
             sqla_bind.value.keys.append(_name)
             sqla_bind.value.values.append(_value)
+
+    def add_url(self, name, value):
+        for be_api_url in self.find_be_api_urls():
+            _name = ast.Str(s=name)
+            _value = ast.Str(s=value)
+            be_api_url.value.keys.append(_name)
+            be_api_url.value.values.append(_value)
 
     def add_db_engine(self, bind_name, backend_version):
         for db_engine in self.find_db_engine_discovery_map():
