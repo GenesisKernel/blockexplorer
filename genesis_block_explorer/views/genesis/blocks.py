@@ -39,7 +39,7 @@ class DataTablesBlocks(DataTablesExt):
             logger.warning("time_ids isn't set")
         logger.debug("blocks_post_query_process time_ids: %s" % time_ids)
 
-        data_ids = self.prepare_col_ids(col_ids=kwargs.get('data1_ids'))
+        data_ids = self.prepare_col_ids(col_ids=kwargs.get('data_ids'))
         if not data_ids:
             logger.warning("data_ids isn't set")
         logger.debug("blocks_post_query_process data_ids: %s" % data_ids)
