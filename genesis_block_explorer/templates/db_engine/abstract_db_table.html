@@ -31,6 +31,7 @@
       var table = $('#abstract_db_tables').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "{{ url_for('dt_block_chain') }}",
         //"columns": [
         //    {

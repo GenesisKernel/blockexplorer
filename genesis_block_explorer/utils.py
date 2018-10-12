@@ -1,4 +1,5 @@
 import six
+from datetime import datetime, timezone
 
 from .logging import get_logger
 
@@ -56,3 +57,9 @@ def get_backend_features_by_version(backend_version):
     return \
         app.config['BACKEND_VERSION_FEATURES_MAP'][backend_version]['features']
 
+def ts_to_fmt_time(ts, utc=False):
+    fmt = '%d/%b/%Y %H:%M:%S'
+    if utc:
+        return datetime.utcfromtimestamp(int(ts)).strftime(fmt)
+    else:
+        return datetime.fromtimestamp(int(ts)).strftime(fmt)

@@ -15,7 +15,7 @@ from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from ...datatables import DataTablesExt
 
-from ..utils import ts_to_fmt_time
+from ...utils import ts_to_fmt_time
 
 from genesis_block_chain.parser.common_parse_data_full import (
         parse_block, ExtraData, UnpackValueError,
