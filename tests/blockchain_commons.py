@@ -85,6 +85,7 @@ d3 = [
             'header': {
                 'block_id': '123',
                 'time': 1535819403,
+                'key_id': -5890060949424433251,
                 'ecosystem_id': 0,
                 'node_position': 0,
                 'sign': '6LVsJppg6jPGYv/wpfvz+/9+Cc44POXMWAFcOFB60BKT06tg7S2R4WEcxcWQmRVesyanT8y/5XETsnzOgBDMIA==', # e8b56c269a60ea33c662fff0a5fbf3fbff7e09ce383ce5cc58015c38507ad01293d3ab60ed2d91e1611cc5c59099155eb326a74fccbfe57113b27cce8010cc20
@@ -126,6 +127,7 @@ d3 = [
             'header': {
                 'block_id': '456',
                 'time': 123123123,
+                'key_id': -5890060949424433251,
                 'ecosystem_id': 0,
                 'node_position': 0,
                 'sign': '6LVsJppg6jPGYv/wpfvz+/9+Cc44POXMWAFcOFB60BKT06tg7S2R4WEcxcWQmRVesyanT8y/5XETsnzOgBDMIA==',
@@ -164,7 +166,7 @@ d3 = [
     },
 ]
 
-d4 = blocks_list_to_dict(d3)
+d4 = blocks_list_to_dict(d3.copy())
 
 def get_txs(d):
     return d[tuple(d.keys())[0]]

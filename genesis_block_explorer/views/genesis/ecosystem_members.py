@@ -10,7 +10,7 @@ from ...db import db
 
 from ...models.db_engine.model import get_model_data_by_db_id_and_table_name
 from ...models.db_engine.session import SessionManager
-from ...models.genesis.explicit import get_ecosystem_model, EsKeys
+from ...models.genesis.explicit import get_ecosystem_model, get_keys_model
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from datatables import ColumnDT, DataTables
@@ -77,7 +77,7 @@ def ecosystem_members(id, ecosystem_id):
 def dt_ecosystem_members(id, ecosystem_id):
     model = get_ecosystem_model(backend_features=sm.get_be_features(id))
     es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
-    model = EsKeys
+    model = get_keys_model(backend_features=sm.get_be_features(id))
     model.set_ecosystem(ecosystem_id)
     column_ids = ['id', 'amount', 'pub']
     columns = [getattr(model, col_id) for col_id in column_ids]

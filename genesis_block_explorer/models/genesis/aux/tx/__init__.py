@@ -1,24 +1,11 @@
-import datetime
-
-from sqlalchemy.sql import table, column, select, update, insert
+from sqlalchemy.ext.hybrid import hybrid_method
 
 from flask import current_app as app
 
-from genesis_blockchain_api_client.blockchain.block import (
-    Block, get_block_id_from_dict, get_block_data_from_dict
-)
-from genesis_blockchain_api_client.blockchain.block_set import BlockSet
-from genesis_blockchain_api_client.blockchain.tx import Tx
-from genesis_blockchain_api_client.blockchain.tx_set import TxSet
-
 from .....db import db
 from .....logging import get_logger
-from .....utils import is_number, ts_to_fmt_time
-from .....blockchain import (
-    get_block, get_block_data,
-    get_detailed_block, get_detailed_block_data,
-)
-
+from ..utils import update_dict_with_key_id, update_dict_with_time
+from ..generic.prev_next_item import PrevNextItemMixin
 from .param import ParamModel
 
 def get_tx_params_model(bind_key=None):
@@ -32,40 +19,58 @@ logger = get_logger(app)
 class Error(Exception):
     pass
 
-class TxModel(db.Model):
+class TxPrevNextItemMixin(PrevNextItemMixin):
+    @hybrid_method
+    def get_prev_next_info(self, **kwargs):
+        session = kwargs.get('session', db.session)
+        has_prev = self.has_prev(session=session)
+        if has_prev:
+            prev_tx_id = self.prev(session=session).id
+            prev_tx_hash = self.prev(session=session).hash
+        else:
+            prev_tx_id = 0
+            prev_tx_hash = ''
+        has_next = self.has_next(session=session)
+        if has_next:
+            next_tx_id = self.next(session=session).id
+            next_tx_hash = self.next(session=session).hash
+        else:
+            next_tx_id = 0
+            next_tx_hash = ''
+        info = {
+            'has_prev': has_prev,
+            'prev_tx_id': prev_tx_id, 
+            'prev_tx_hash': prev_tx_hash, 
+            'has_next': has_next,
+            'next_tx_id': next_tx_id, 
+            'next_tx_hash': next_tx_hash, 
+        }
+        return info
+
+class TxModel(db.Model, TxPrevNextItemMixin):
 
     __tablename__ = 'transactions'
 
-    id = db.Column(db.Integer, primary_key=True)
-    block_id = db.Column(db.Integer, db.ForeignKey('blocks.id'))
+    id = db.Column(db.Integer, primary_key=True, comment="TX Record ID")
+    time_dt = db.Column(db.String, comment="Time")
+    hash = db.Column(db.String(512), index=True, comment="Hash")
+    contract_name = db.Column(db.String, comment="Contract Name")
+    ukey_id = db.Column(db.String, comment="Key ID")
+    type = db.Column(db.Integer, comment="Type")
+    block_id = db.Column(db.Integer, db.ForeignKey('blocks.id'),
+                         comment="Block ID")
 
     # main
-    hash = db.Column(db.String)
-    contract_name = db.Column(db.String)
-    key_id = db.Column(db.BigInteger)
-    ukey_id = db.Column(db.String)
-    time_ts = db.Column(db.Integer)
-    time_dt = db.Column(db.DateTime)
-    type = db.Column(db.Integer)
+    key_id = db.Column(db.BigInteger, comment="Raw Key ID")
+    time_ts = db.Column(db.Integer, comment="Time (Stamp)")
+    time_dtu = db.Column(db.String, comment="Time (UTC)")
     params = db.relationship('ParamModel', uselist=True,
                              backref=db.backref('transactions'))
 
     @classmethod
     def prepare_from_dict(cls, data, **kwargs):
-        if 'key_id' in data:
-            if data['key_id']:
-                data['ukey_id'] = str(int(data['key_id']) & 0xffffffffffffffff)
-            else:
-                data['ukey_id'] = '0'
-        if 'time' in data:
-            time_ts = int(data.pop('time'))
-            time_dt = datetime.datetime.fromtimestamp(time_ts)
-        else:
-            time_ts = 0
-            time_dt = datetime.datetime.fromtimestamp(time_ts)
-        data['time_ts'] = time_ts
-        data['time_dt'] = time_dt
-
+        data = update_dict_with_key_id(data)
+        data = update_dict_with_time(data)
         params_dicts = []
         if 'params' in data:
             params = data.pop('params')
@@ -86,9 +91,7 @@ class TxModel(db.Model):
         tx = cls(**data)
         session.add(tx)
         for param in params_dicts:
-            name = tuple(param.keys())[0]
-            value = param[name]
-            p = ParamModel(name=name, value=value)
+            p = ParamModel(name=param['name'], value=param['value'])
             tx.params.append(p)
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()

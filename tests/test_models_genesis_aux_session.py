@@ -5,30 +5,22 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
 
 from genesis_block_explorer.db import db
+from genesis_block_explorer.models.genesis.aux.config import (
+    update_aux_helpers_bind_name,
+)
 from genesis_block_explorer.models.genesis.aux.session import (
     AuxSessionManager, 
-    DbEngineMapIsEmptyError
+    get_aux_helpers_session,
 )
 
-def init_db(bind_key=None):
-    if bind_key:
-        pass
-    db.create_all(bind=bind_key)
-
-def create_test_app():
-    from genesis_block_explorer.app import create_app
-    app = create_app()
-    app.app_context().push()
-    return app
-
-def my_setup():
-    bind_key = 'genesis_aux_test'
-    app = create_test_app()
-    db.init_app(app)
-    init_db(bind_key=bind_key)
-
-def my_teardown():
-    pass
+from .test_models_genesis_aux_block import (
+    init_db,
+    create_tables,
+    create_test_app,
+    my_setup,
+    my_teardown,
+    update_aux_db_engine_discovery_map,
+)
 
 @with_setup(my_setup, my_teardown)
 def test_get_bind_name():
@@ -68,4 +60,14 @@ def test_get_session():
     assert sm.get_session(1) == sm.get_session(1)
     assert sm.get(1) == sm.get(1)
     assert sm.get_session(1) == sm.get(1)
+
+@with_setup(my_setup, my_teardown)
+def test_get_aux_helpers_session():
+    app = create_test_app()
+    update_aux_db_engine_discovery_map(app, force_update=True,
+                                       aux_db_engine_name_prefix='test_aux_')
+    update_aux_helpers_bind_name(app, prefix='test_')
+    session = get_aux_helpers_session(app)
+    assert isinstance(session, Session)
+
 

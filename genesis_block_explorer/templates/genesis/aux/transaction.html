@@ -1,0 +1,178 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3><a href="/genesis/backend/{{ seq_num }}/transactions">Transactions</a> &rarr; Transaction #{{ tx_hash }}</h3>
+      <ul class="pager">
+        <li id="prev_tx_li" class="previous{% if not has_prev %} disabled{% endif %}"><a id="prev_tx_href" href="{% if has_prev %}{{ url_for('aux_transaction', tx_hash=prev_tx_hash, seq_num=seq_num) }}{% else %}#{% endif %}">Previous Transaction</a></li>
+        <li id="next_tx_li" class="next{% if not has_next %} disabled{% endif %}"><a id="next_tx_href" href="{% if has_next %}{{ url_for('aux_transaction', tx_hash=next_tx_hash, seq_num=seq_num) }}{% else %}#{% endif %}">Next Transaction</a></li>
+      </ul>
+      {% if seq_num == 0 %}
+      No transaction data
+      {% else %}
+      <table id="genesis_transaction" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Parameters</h3>
+      {% if seq_num == 0 %}
+      No transactios parameters
+      {% else %}
+      <table id="genesis_parameters" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for p_column_name in p_column_names %}
+            <th>{{ p_column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+
+function updatePrevNextTxItems(pn_info) {
+    if (!pn_info) {
+        return
+    }
+    console.log("pn_info: ", pn_info);
+    if (pn_info.has_prev) {
+        $('#prev_tx_li').removeClass('disabled');
+        $('#prev_tx_href').attr('href', pn_info.prev_tx_url);
+    } else {
+        $('#prev_tx_li').addClass('disabled');
+        $('#prev_tx_href').attr('href', '#');
+    }
+    if (pn_info.has_next) {
+        $('#next_tx_li').removeClass('disabled');
+        $('#next_tx_href').attr('href', pn_info.next_tx_url);
+    } else {
+        $('#next_tx_li').addClass('disabled');
+        $('#next_tx_href').attr('href', '#');
+    }
+}
+
+function requestPrevNextTxInfo() {
+    $.ajax({
+      url: "{{ url_for('aux_transaction_prev_next_info', seq_num=seq_num, tx_hash=tx_hash) }}",
+      method: "GET",
+      success: function(data) {
+        updatePrevNextTxItems(data);
+      },
+      error: function(data) {
+        console.log("error: " + data.responseText);
+      }
+    });
+}
+
+      namespace = '{{ socketio_namespace }}'; 
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+      socket.on('connect', function() {
+        console.log("on connect");
+        socket.emit('my_event', {data: 'I\'m connected!'});
+      });
+      var ping_pong_times = [];
+      var start_time;
+      //window.setInterval(function() {
+      //  start_time = (new Date).getTime();
+      //  socket.emit('my_ping');
+      //  console.log("my ping");
+      //}, 1000);
+
+      socket.on('my_response', function(msg) {
+        //$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+        if (msg.data == 'reload') {
+            requestPrevNextTxInfo();
+        }
+      });
+
+      socket.on('my_pong', function() {
+        console.log("on my_pong");
+        var latency = (new Date).getTime() - start_time;
+        ping_pong_times.push(latency);
+        ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+        var sum = 0;
+        for (var i = 0; i < ping_pong_times.length; i++)
+            sum += ping_pong_times[i];
+        //$('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+      });
+
+    $(document).ready(function(){
+      var table = $('#genesis_transaction').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "bPaginate": false,
+        "info": false, 
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/transaction/{{ tx_hash }}/helper",
+        "columnDefs": [
+            {"targets": 0, "visible": false},
+        ],
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    {% if col_ind == 2 %}
+                    switch(row[0]) {
+                        case "block_id":
+                            return '<a href="/genesis/backend/{{ seq_num }}/block/' + row[2] + '">' + data + '</a>';
+                        default:
+                            return data;
+                    }
+                    {% else %}
+                    return data;
+                    {% endif %}
+               },
+            },
+            {% endfor %}
+        ]
+      });
+      var p_table = $('#genesis_parameters').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "bPaginate": true,
+        "info": false, 
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/transaction/{{ tx_hash }}/parameters",
+        "columns": [
+            {% for col_ind in range(0, p_columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    return data;
+                },
+            },
+            {% endfor %}
+        ]
+      });
+    });
+  </script>
+{% endblock %}

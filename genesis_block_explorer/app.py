@@ -40,8 +40,14 @@ def create_lean_app(**kwargs):
     app.config.from_pyfile('../config.py')
     if kwargs.get('debug', False):
         app.config['DEBUG'] = True
+    with app.app_context():
+        from .db import db
+        db.init_app(app)
+    return app
 
 def create_app(**kwargs):
+    #global celery 
+
     app = Flask(__name__)
 
     app.config.from_pyfile('../config.py')
@@ -58,8 +64,12 @@ def create_app(**kwargs):
     with app.app_context():
         from .db import db
         db.init_app(app)
-        if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
-            start_db_for_app_once(app)
+        #if os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
+        #    start_db_for_app_once(app)
+        start_db_for_app_once(app)
+
+        from .models.genesis.aux.table import TableManager
+        TableManager(app=app).create_tables()
 
         from .views import home
         from .views.db_engine import databases, tables, columns, values
@@ -69,6 +79,23 @@ def create_app(**kwargs):
             sys_params, sys_params_adv, full_nodes,
             transactions, transactions_by_block, transaction
         )
+        #from .views.genesis.aux.filler import (
+        #    filler_test_add, filler_test_add_result,
+        #    filler_update, filler_update_result,
+        #)
+        from .views.genesis.aux.blocks import (
+            aux_blocks, dt_aux_blocks,
+        )
+        from .views.genesis.aux.block import (
+            aux_block, dt_aux_block_helper,
+        )
+        from .views.genesis.aux.transactions import (
+            aux_transactions, dt_aux_transactions,
+        )
+        from .views.genesis.aux.transaction import (
+            aux_transaction, dt_aux_transaction_helper,
+        )
 
     return app
+
 

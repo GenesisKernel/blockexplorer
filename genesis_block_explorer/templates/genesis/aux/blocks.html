@@ -1,0 +1,110 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3>Blocks</h3>
+      <!--
+      <p>Async mode is: <b>{{ async_mode }}</b></p>
+      <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
+      <h4>Receive:</h4>
+      <div id="log"></div>
+      -->
+      {% if seq_num == 0 %}
+      No blocks
+      {% else %}
+      <table id="genesis_blocks" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      namespace = '{{ socketio_namespace }}'; 
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+      socket.on('connect', function() {
+        console.log("on connect");
+        socket.emit('my_event', {data: 'I\'m connected!'});
+      });
+      var ping_pong_times = [];
+      var start_time;
+      window.setInterval(function() {
+        start_time = (new Date).getTime();
+        socket.emit('my_ping');
+        console.log("my ping");
+      }, 1000);
+
+      socket.on('my_response', function(msg) {
+        //$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+        if (msg.data == 'reload') {
+            $('#genesis_blocks').DataTable().ajax.reload();
+        }
+      });
+
+      socket.on('my_pong', function() {
+        console.log("on my_pong");
+        var latency = (new Date).getTime() - start_time;
+        ping_pong_times.push(latency);
+        ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+        var sum = 0;
+        for (var i = 0; i < ping_pong_times.length; i++)
+            sum += ping_pong_times[i];
+        //$('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+      });
+
+      var table = $('#genesis_blocks').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/blocks",
+        //"dom": 'Bfrtip',
+        "columnDefs": [
+            {
+                "targets": 1,
+                "className": 'noVis'
+            }
+        ],
+        "buttons": [
+            {
+                "extend": 'colvis',
+                "columns": ':not(.noVis)'
+            }
+        ],
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                {% if col_ind == tx_col_ind %}
+                    return '<a href="/genesis/backend/{{ seq_num }}/transactions_by_block/' + row[{{ block_id_col_ind }}] + '">' + data + '</a>';
+                {% else %}
+                    return '<a href="/genesis/backend/{{ seq_num }}/block/' + row[0] + '">' + data + '</a>';
+                {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      //table.buttons().container().appendTo($('.col-sm-6,eq(0)', table.table().container() ) );
+    });
+  </script>
+{% endblock %}

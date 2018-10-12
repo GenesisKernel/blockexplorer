@@ -5,6 +5,12 @@ Genesis Block Explorer CLI Manager
 Usage:
   cli_manage add-bind --name=<name> --value=<value> [--config-path=<config-path>]
   cli_manage add-db-engine --bind-name=<bind-name> --backend-version=<backend-version> [--config-path=<config-path>]
+  cli_manage aux-blocks-stat <seq-num>
+  cli_manage aux-blocks-lock <seq-num>
+  cli_manage aux-blocks-is-locked <seq-num>
+  cli_manage aux-blocks-clear <seq-num>
+  cli_manage aux-blocks-update <seq-num>
+  cli_manage aux-blocks-unlock <seq-num>
   cli_manage -h | --help
   cli_manage --version
 
@@ -38,5 +44,8 @@ def main():
             module = getattr(commands, k)
             commands = getmembers(module, isclass)
             command = [command[1] for command in commands if command[0] != 'Base'][0]
-            command = command(options)
-            command.run()
+            try:
+                command = command(options)
+                command.run()
+            except TypeError:
+                pass

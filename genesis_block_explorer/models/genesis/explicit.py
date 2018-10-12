@@ -21,11 +21,9 @@ sm = SessionManager(app=app)
     
 backend_features = []
 
-class Error(Exception):
-    pass
-
-class NoSuchEcosystem(Error):
-    pass
+class Error(Exception): pass
+class NoSuchEcosystem(Error): pass
+class EcosystemIsNotSetError(Error): pass
 
 class BlockChain(db.Model):
 
@@ -109,18 +107,20 @@ class TransactionsStatus(db.Model):
     error = db.Column(db.String)
 
 
+
 class EsModel(db.Model):
     __abstract__ = True
     #__table_args__ = {'extend_existing': True}
-    _default_ecosystem_id_ = '1'
+    __default_ecosystem_id__ = 1
+    __ecosystem_id__ = None
     __bind_key__ = None
 
     @classmethod
     def set_ecosystem(cls, ecosystem_id, **kwargs):
-        table_name = '%d%s' % (ecosystem_id, cls._tablename_suffix_)
+        table_name = '%s%s' % (ecosystem_id, cls._tablename_suffix_)
         db_id = kwargs.get('db_id', None)
         if db_id:
-            if kwargs.get('use_inspector', False):
+            if kwargs.get('use_inspector', True):
                 table_names = sm.get_table_names(db_id)
             else:
                 table_names = [t.name for t in sm.get_db(1).tables]
@@ -128,11 +128,20 @@ class EsModel(db.Model):
                 logger.warning("table %s doesn't exist @ db with id %s" \
                                % (table_name , db_id))
                 raise NoSuchEcosystem("ecosystem_id: %d" % ecosystem_id)
+        cls.__ecosystem_id__ = ecosystem_id
         cls.__tablename__ = table_name
         cls.__table__.name = table_name
 
+    @classmethod
+    def get_ecosystem(cls):
+        return cls.__ecosystem_id__
 
-class EsKeys(EsModel):
+    @classmethod
+    def check_ecosystem(cls):
+        if not cls.__ecosystem_id__:
+            raise EcosystemIsNotSetError("current ecosystem is '%s'" % cls.__ecosystem_id__)
+
+class EsKeysCommon(EsModel):
     _tablename_suffix_ = '_keys'
     __tablename__ = '1_keys'
     #__table_args__ = {'extend_existing': True}
@@ -142,8 +151,8 @@ class EsKeys(EsModel):
     pub = db.Column(db.LargeBinary)
     amount = db.Column(db.Numeric)
     multi = db.Column(db.Integer)
-    delete = db.Column(db.Integer)
-    block = db.Column(db.Integer)
+    #delete = db.Column(db.Integer)
+    #blocked = db.Column(db.Integer)
 
 
 class EsParams(EsModel):
@@ -158,18 +167,18 @@ class EsParams(EsModel):
     conditions = db.Column(db.Text)
 
 
-def get_table_object(self, core_name, es_id):
-    metadata = MetaData()
-    table_name = es_id + '_' + core_name
-    table_object = Table(table_name, metadata,
-        db.Column('id', db.Integere, primary_key=True),
-        db.Column('pub', db.LargeBinary),
-        db.Column('amount', db.String),
-        db.Column('multi', db.Integer),
-        db.Column('block', db.Integer)
-    )
-    mapper(EsKeys, table_object)
-    return EsKeys 
+#def get_table_object(self, core_name, es_id):
+#    metadata = MetaData()
+#    table_name = es_id + '_' + core_name
+#    table_object = Table(table_name, metadata,
+#        db.Column('id', db.Integere, primary_key=True),
+#        db.Column('pub', db.LargeBinary),
+#        db.Column('amount', db.String),
+#        db.Column('multi', db.Integer),
+#        db.Column('block', db.Integer)
+#    )
+#    mapper(EsKeys, table_object)
+#    return EsKeys 
 
 
 class HookedColumnProperty(ColumnProperty):
@@ -188,42 +197,128 @@ class EcosystemCommon(db.Model):
 
     id = db.Column(db.BigInteger, primary_key=True)
 
-    @hybrid_property
-    def members_count(self):
-        model = EsKeys
-        model.set_ecosystem(self.id)
-        q = select([func.count(model.id)]).select_from(model)
-        res = db.session.execute(q).scalar()
-        return res
-
-    @hybrid_method
-    def get_members_count(self, **kwargs):
-        try:
-            db_id = kwargs.get('db_id', 1)
-            logger.debug("db_id: %d" % db_id)
-            model = EsKeys
-            model.set_ecosystem(self.id, db_id=db_id)
-            q = select([func.count(model.id)]).select_from(model)
-            session = sm.get(db_id)
-            res = session.execute(q).scalar()
-            return res
-        except NoSuchEcosystem as e:
-            logger.warning("ecosystem_id: %s" % self.id)
-            return 0
-
-
 def get_ecosystem_model(**kwargs):
     backend_features = kwargs.get('backend_features', None)
     if backend_features is None:
         backend_features = []
+
+    class EcosystemDynamicCommon(EcosystemCommon):
+        __abstract__ = True
+        __table_args__ = {'extend_existing': True}
+        @hybrid_property
+        def members_count(self):
+            model = get_keys_model(backend_features=backend_features)
+            model.set_ecosystem(self.id)
+            q = select([func.count(model.id)]).select_from(model)
+            res = db.session.execute(q).scalar()
+            return res
+
+        @hybrid_method
+        def get_members_count(self, **kwargs):
+            try:
+                db_id = kwargs.get('db_id', 1)
+                logger.debug("db_id: %d" % db_id)
+                model = get_keys_model(backend_features=backend_features)
+                model.set_ecosystem(self.id, db_id=db_id)
+                q = select([func.count(model.id)]).select_from(model)
+                session = sm.get(db_id)
+                res = session.execute(q).scalar()
+                return res
+            except NoSuchEcosystem as e:
+                logger.warning("ecosystem_id: %s" % self.id)
+                return 0
+
     if 'system_parameters_at_ecosystem' in backend_features:
-        class Ecosystem(EcosystemCommon, EsModel):
+        class Ecosystem(EcosystemDynamicCommon, EsModel):
             __tablename__ = '1_ecosystems'
             _tablename_suffix_ = '1_ecosystems'
     else:
-        class Ecosystem(EcosystemCommon):
+        class Ecosystem(EcosystemDynamicCommon):
             __tablename__ = 'system_states'
     return Ecosystem
+
+def get_keys_model(**kwargs):
+    backend_features = kwargs.get('backend_features', None)
+    if backend_features is None:
+        backend_features = []
+    if 'keys_tables_delete_to_blocked' in backend_features:
+        class EsKeys(EsKeysCommon):
+            maxpay = db.Column(db.Integer)
+            deleted = db.Column(db.Integer)
+            blocked = db.Column(db.Integer)
+            @hybrid_method
+            def to_dict(self, id_field_name='id'):
+                d = {
+                    'pub': self.pub,
+                    'amount': self.amount,
+                    'multi': self.multi,
+                    'maxpay': self.maxpay,
+                    'deleted': self.deleted,
+                    'blocked': self.blocked,
+                }
+                if id_field_name:
+                    d[id_field_name] = self.id
+                return d
+
+        #@hybrid_method
+        #def to_dict(self, id_field_name='id'):
+        #    d = {
+        #        'pub': self.pub,
+        #        'amount': self.amount,
+        #        'multi': self.multi,
+        #        'maxpay': self.maxpay,
+        #        'deleted': self.deleted,
+        #        'blocked': self.blocked,
+        #    }
+        #    if id_field_name:
+        #        d[id_field_name] = self.id
+        #    return d
+        #attrs = {
+        #    #'__table_args__': {'extend_existing': True},
+        #    'maxpay': db.Column(db.Integer),
+        #    'deleted': db.Column(db.Integer),
+        #    'blocked': db.Column(db.Integer),
+        #    'to_dict': to_dict,
+        #}
+    else:
+        class EsKeys(EsKeysCommon):
+            delete = db.Column(db.Integer)
+            block = db.Column(db.Integer)
+
+            @hybrid_method
+            def to_dict(self, id_field_name='id'):
+                d = {
+                    'pub': self.pub,
+                    'amount': self.amount,
+                    'multi': self.multi,
+                    'deleted': self.delete,
+                    'blocked': self.block,
+                }
+                if id_field_name:
+                    d[id_field_name] = self.id
+                return d
+
+        #@hybrid_method
+        #def to_dict(self, id_field_name='id'):
+        #    d = {
+        #        'pub': self.pub,
+        #        'amount': self.amount,
+        #        'multi': self.multi,
+        #        'deleted': self.delete,
+        #        'blocked': self.block,
+        #    }
+        #    if id_field_name:
+        #        d[id_field_name] = self.id
+        #    return d
+        #attrs = {
+        #    #'__table_args__': {'extend_existing': True},
+        #    'delete': db.Column(db.Integer),
+        #    'block': db.Column(db.Integer),
+        #    'to_dict': to_dict,
+        #}
+    #newclass = type('EsKeys', (EsKeysCommon,), attrs)
+    #return newclass #EsKeys
+    return EsKeys
 
 
 class SysParamCommon(db.Model):

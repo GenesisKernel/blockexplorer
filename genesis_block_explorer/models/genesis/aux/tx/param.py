@@ -1,23 +1,7 @@
-from sqlalchemy.sql import table, column, select, update, insert
-
 from flask import current_app as app
-
-from genesis_blockchain_api_client.blockchain.block import (
-    Block, get_block_id_from_dict, get_block_data_from_dict
-)
-from genesis_blockchain_api_client.blockchain.block_set import BlockSet
-from genesis_blockchain_api_client.blockchain.tx import Tx
-from genesis_blockchain_api_client.blockchain.tx_set import TxSet
-from genesis_blockchain_api_client.blockchain.tx.param import Param
-from genesis_blockchain_api_client.blockchain.tx.param_set import ParamSet
 
 from .....db import db
 from .....logging import get_logger
-from .....utils import is_number, ts_to_fmt_time
-from .....blockchain import (
-    get_block, get_block_data,
-    get_detailed_block, get_detailed_block_data,
-)
 
 logger = get_logger(app) 
 
@@ -25,17 +9,35 @@ class ParamModel(db.Model):
 
     __tablename__ = 'tx_params'
 
-    id = db.Column(db.Integer, primary_key=True)
-    tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'))
+    id = db.Column(db.Integer, primary_key=True, comment="Parameter record ID")
+    tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'),
+                      comment="TX ID")
 
     # main
-    name = db.Column(db.String)
-    value = db.Column(db.Text)
+    name = db.Column(db.String, comment="Name")
+    value = db.Column(db.Text, comment="Value")
+
+    @classmethod
+    def prepare_from_dict(cls, data, **kwargs):
+        if kwargs.get('from_struct_style', 'simple_dict'):
+            if kwargs.get('to_struct_style', 'simple_dict'):
+                return data
+            else:
+                return {'name': tuple(a.keys())[0],
+                        'value': tuple(a.keys())[0]}
+        else:
+            if kwargs.get('to_struct_style', 'simple_dict'):
+                return {tuple(a.keys())[0]: tuple(a.keys())[0]}
+            else:
+                return data
 
     @classmethod
     def update_from_dict(cls, data, **kwargs):
         session = kwargs.get('session', db.session)
-        param = cls(**data)
+        param_data = cls.prepare_from_dict(data,
+               from_struct_style=kwargs.get('from_struct_style', 'simple_dict'),
+               to_struct_style='sqlalchemy')
+        param = cls(**param_data)
         session.add(param)
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()
@@ -44,20 +46,19 @@ class ParamModel(db.Model):
     @classmethod
     def update_from_param(cls, param, **kwargs):
         session = kwargs.get('session', db.session)
-        data = {'name': param.oname, 'value': param.value}
-        return cls.update_from_dict(data,
-        db_session_commit_enabled=kwargs.get('db_session_commit_enabled', True))
+        data = param.to_dict(struct_style='sqlalchemy')
+        return cls.update_from_dict(data, session=session,
+            db_session_commit_enabled=kwargs.get('db_session_commit_enabled',
+                                                 True))
 
     @classmethod
     def update_from_param_set(cls, param_set, **kwargs):
         session = kwargs.get('session', db.session)
-        list_of_dicts = param_set.to_list(style='camel')
-        l= []
-        for data in list_of_dicts:
-            l.append(cls.update_from_dict(data,
-                                          db_session_commit_enabled=False))
+        l = []
+        for param in param_set:
+            l.append(cls.update_from_param(param, session=session,
+                                           db_session_commit_enabled=False))
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()
         return l
-
 

@@ -7,6 +7,7 @@ class Base(object):
     def __init__(self, options, *args, **kwargs):
         self.options = options
         self.args = args
+        #print("base.py Base.__init__") # args: %s" % args)
         self.kwargs = kwargs
 
     def run(self):

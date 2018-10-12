@@ -47,3 +47,7 @@ include
 *.log
 *.log.*
 config.py.*
+
+# celery
+celerybeat-schedule
+celerybeat.pid

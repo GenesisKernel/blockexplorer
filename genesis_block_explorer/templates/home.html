@@ -3,6 +3,48 @@
 {% block content %}
   <div class="row">
     <div class="col-lg-12">
+         &nbsp;
+      <!--
+      <p>Async mode is: <b>{{ async_mode }}</b></p>
+      <p>Average ping/pong latency: <b><span id="ping-pong"></span>ms</b></p>
+    <h2>Receive:</h2>
+    <div id="log"></div>
+      -->
     </div>
   </div>
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+      namespace = '{{ socketio_namespace }}'; 
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+      socket.on('connect', function() {
+        console.log("on connect");
+        socket.emit('my_event', {data: 'I\'m connected!'});
+      });
+      var ping_pong_times = [];
+      var start_time;
+      window.setInterval(function() {
+        start_time = (new Date).getTime();
+        socket.emit('my_ping');
+        console.log("my ping");
+      }, 1000);
+
+      socket.on('my_response', function(msg) {
+        //$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+      });
+
+      socket.on('my_pong', function() {
+        console.log("on my_pong");
+        var latency = (new Date).getTime() - start_time;
+        ping_pong_times.push(latency);
+        ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+        var sum = 0;
+        for (var i = 0; i < ping_pong_times.length; i++)
+            sum += ping_pong_times[i];
+        //$('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+      });
+    });
+  </script>
 {% endblock %}
