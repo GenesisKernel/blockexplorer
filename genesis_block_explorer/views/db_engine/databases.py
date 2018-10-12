@@ -13,7 +13,7 @@ logger = get_logger(app)
 @app.route("/db-engine/databases")
 def databases():
     valid_db_id = get_by_id_or_first_genesis_db_id()
-    column_names = ['ID', 'Name', 'Engine', 'Driver', 'Backend Version']
+    column_names = ['ID', 'Name', 'Engine', 'Backend Version']
     return render_template('db_engine/databases.html',
                             project=app.config.get('PRODUCT_BRAND_NAME') + ' Block Explorer',
                             valid_db_id=valid_db_id,
@@ -23,7 +23,7 @@ def databases():
 @app.route('/dt/db-engine/databases')
 def dt_databases():
     model = Database
-    column_ids = ['id', 'name', 'engine', 'driver', 'backend_version']
+    column_ids = ['id', 'name', 'engine', 'backend_version']
     columns = [getattr(model, col_id) for col_id in column_ids]
     dt_columns = [ColumnDT(m) for m in columns]
     query = db.session.query(*columns).filter(Database.name!=':memory:')

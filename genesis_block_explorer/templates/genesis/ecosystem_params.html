@@ -29,6 +29,7 @@
       var table = $('#genesis_ecosystem_params').DataTable({
         "processing": true,
         "serverSide": true,
+        "scrollX": true,
         "ajax": "/dt/genesis/database/{{ db_id }}/ecosystem/{{ ecosystem_id }}/params",
         "columns": [
             {% for col_ind in range(0, columns_num) %}

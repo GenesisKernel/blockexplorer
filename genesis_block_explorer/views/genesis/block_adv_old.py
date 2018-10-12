@@ -39,16 +39,6 @@ def block_adv(id, block_id):
     else:
         next_block_id = 0
     column_names = ['Title', 'Value']
-    #id = db.Column(db.Integer, primary_key=True)
-    #db_id = db.Column(db.Integer)
-    #block_id = db.Column(db.Integer)
-    #time = db.Column(db.Integer)
-    #type = db.Column(db.Integer)
-    #key_id = db.Column(db.String)
-    #hash = db.Column(db.String)
-    #contract_name = db.Column(db.String)
-    #params = db.Column(db.String)
-    bt_column_names = ['Time', 'Type', 'Key ID', 'Hash', 'Contract Name', 'Parameters']
     t_column_names = ['Time', 'Sender Key ID', 'Ecosystem ID',
                     'Hash', 'Type', 'Error']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
@@ -66,8 +56,6 @@ def block_adv(id, block_id):
                             columns_num=len(column_names),
                             valid_db_id=valid_db_id,
                             hash_col_ind=3,
-                            bt_column_names=bt_column_names,
-                            bt_columns_num=len(bt_column_names),
                             t_column_names=t_column_names,
                             t_columns_num=len(t_column_names))
 
