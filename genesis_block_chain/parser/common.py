@@ -7,6 +7,7 @@ from ..utils import utils
 from ..utils import tx
 
 from .first_block import FirstBlockParser
+from .stop_network import StopNetworkParser
 
 class Error(Exception):
     pass
