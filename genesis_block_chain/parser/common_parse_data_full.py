@@ -180,6 +180,8 @@ def set_if_not_empty(dst_dict, key, value):
 def parse_contract_transaction(p, data):
     try:
         unp = msgpack.unpackb(data, raw=False)
+    except UnicodeDecodeError as e:
+        unp = {}
     except ExtraData as e:
         raise e
     except Exception as e:
