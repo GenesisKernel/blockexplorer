@@ -288,5 +288,8 @@ def init_db():
     db.create_all(bind='db_engine')
 
 def import_data(app, **kwargs):
+    Column.query.delete()
+    Table.query.delete()
+    Database.query.delete()
     Database.add_from_engines(app=app)
 
