@@ -46,6 +46,9 @@ SQLALCHEMY_BINDS = {
     'test_aux_genesis3': 'sqlite:///' + os.path.join(basedir, 'test_aux_genesis3.sqlite'),
 }
 
+ENABLE_DATABASE_EXPLORER = False
+ENABLE_DATABASE_SELECTOR = True
+
 DB_ENGINE_DISCOVERY_MAP = {
     'genesis1': { 'backend_version': '20180830' },
     'genesis2': { 'backend_version': '20180830' },

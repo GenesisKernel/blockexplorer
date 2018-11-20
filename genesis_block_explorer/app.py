@@ -72,7 +72,14 @@ def create_app(**kwargs):
         TableManager(app=app).create_tables()
 
         from .views import home
-        from .views.db_engine import databases, tables, columns, values
+
+        if app.config.get('ENABLE_DATABASE_EXPLORER') \
+        or app.config.get('ENABLE_DATABASE_SELECTOR'):
+            from .views.db_engine import databases
+
+        if app.config.get('ENABLE_DATABASE_EXPLORER'):
+            from .views.db_engine import tables, columns, values
+
         from .views.genesis import (
             blocks, blocks_adv, block, block_adv, block_transactions,
             ecosystems, ecosystem_members, ecosystem_params, ecosystem_adv,

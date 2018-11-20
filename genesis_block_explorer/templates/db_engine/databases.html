@@ -26,7 +26,6 @@
   <script src="https://cdn.datatables.net/1.10.10/js/jquery.dataTables.min.js"></script>
   <script type="text/javascript" charset="utf-8">
     $(document).ready(function(){
-      var tables_url_1 = '{{ url_for('tables', id=1) }}';
       var table = $('#db_engine_databases').DataTable({
         "processing": true,
         "serverSide": true,
@@ -37,7 +36,13 @@
             {
                 "data": {{ col_ind }},
                 "render": function ( data, type, row, meta ) {
+                    {% if config.ENABLE_DATABASE_EXPLORER %}
                     return '<a href="/db-engine/database/' + row[0] + '/tables">' + data + '</a>';
+                    {% elif config.ENABLE_DATABASE_SELECTOR %}
+                    return '<a href="/genesis/backend/' + row[0] + '/blocks">' + data + '</a>';
+                    {% else %}
+                    return data;
+                    {% endif %}
                 },
             },
             {% endfor %}
