@@ -4,6 +4,7 @@ from sqlalchemy import func
 
 from ..filler import Filler
 
+from .....utils import is_number
 from .....blockchain import (
     get_max_block_id,
     get_detailed_block,
@@ -19,6 +20,9 @@ from ..tx.param import ParamModel
 
 logger = logging.getLogger(__name__)
 
+class Error(Exception): pass
+class FetchNumOfBlocksError(Exception): pass
+
 class BlockFiller(Filler):
     def __init__(self, **kwargs):
         kwargs['involved_models'] = kwargs.get('involved_models',
@@ -26,6 +30,9 @@ class BlockFiller(Filler):
         super(BlockFiller, self).__init__(**kwargs)
         self.context = kwargs.get('filler',
                             'BlockFiller_%s' if self.seq_num else 'BlockFiller')
+        self.fetch_num_of_blocks = kwargs.get('fetch_num_of_blocks', 50)
+        if not is_number(self.fetch_num_of_blocks):
+            raise FetchNumOfBlocksError("self.fetch_num_of_blocks: %s type(self.fetch_num_of_blocks): %s" % (self.fetch_num_of_blocks, type(self.fetch_num_of_blocks)))
 
     def fill_block(self, block_id, **kwargs):
         self.add_event(caller='fill_block', stage='started')
@@ -40,14 +47,19 @@ class BlockFiller(Filler):
         self.add_event(caller='fill_block', stage='finished')
 
     def fill_all_blocks(self, **kwargs):
+        fetch_num_of_blocks = kwargs.get('fetch_num_of_blocks',
+                                         self.fetch_num_of_blocks)
         self.add_event(caller='fill_all_blocks', stage='started')
         self.do_if_locked(**kwargs)
         self.lock(**kwargs)
         max_block_id = get_max_block_id(self.seq_num)
-        BlockModel.update_from_block_set(
-            get_detailed_blocks(self.seq_num, 1, max_block_id),
-            session=self.aux_sm.get(self.seq_num)
-        )
+
+        for from_block_id in range(1, max_block_id, fetch_num_of_blocks):
+            to_block_id = max_block_id if from_block_id + fetch_num_of_blocks > max_block_id else from_block_id + fetch_num_of_blocks
+            BlockModel.update_from_block_set(
+                get_detailed_blocks(self.seq_num, from_block_id, to_block_id),
+                session=self.aux_sm.get(self.seq_num)
+            )
         self.unlock(**kwargs)
         self.add_event(caller='fill_all_blocks', stage='finished')
         

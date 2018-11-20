@@ -1,3 +1,4 @@
+import sqlalchemy
 from sqlalchemy.ext.hybrid import hybrid_method
 
 from flask import current_app as app

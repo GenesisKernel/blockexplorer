@@ -14,11 +14,11 @@ def get_valid_seq_num(seq_num, **kwargs):
     aux_map_name = kwargs.get('aux_db_engine_discovery_map_name',
                               'AUX_DB_ENGINE_DISCOVERY_MAP')
 
-    print("get_valid_seq_num() source seq_num: %s" % seq_num)
+    #print("get_valid_seq_num() source seq_num: %s" % seq_num)
     if not app.config.get(aux_map_name) \
     or seq_num not in range(1, len(app.config.get(aux_map_name)) + 1):
         seq_num = 0
-    print("get_valid_seq_num() final seq_num: %s" % seq_num)
+    #print("get_valid_seq_num() final seq_num: %s" % seq_num)
     return seq_num
 
 def key_id_to_ukey_id(key_id):
@@ -42,7 +42,7 @@ def update_dict_with_key_id(data, **kwargs):
         data[dst_key_id_name] = str(key_id)
     else:
         data[dst_key_id_name] = key_id
-    print("update_dict_with_key_id 1 data: %s" % data)
+    #print("update_dict_with_key_id 1 data: %s" % data)
     return data
 
 def ts_time_to_dt_time(ts_time):

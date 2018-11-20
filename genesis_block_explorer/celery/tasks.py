@@ -28,7 +28,8 @@ def filler_test_add(x, y):
 
 def block_filler_update(seq_num):
     logger.debug("starting block filler update for seq_num: %s" % seq_num)
-    bf = BlockFiller(app=application, seq_num=seq_num)
+    bf = BlockFiller(app=application, seq_num=seq_num,
+        fetch_num_of_blocks=application.config.get('FETCH_NUM_OF_BLOCKS'))
     result = bf.update()
     logger.debug("result: %s" % result)
     if result:
@@ -51,7 +52,8 @@ def block_filler_update_task(seq_num):
     return block_filler_update(seq_num)
 
 def block_filler_clear(seq_num):
-    bf = BlockFiller(app=application, seq=num)
+    bf = BlockFiller(app=application, seq=num,
+        fetch_num_of_blocks=application.config.get('FETCH_NUM_OF_BLOCKS'))
     return bf.clear()
 
 @celery.task
@@ -62,7 +64,8 @@ def run_block_fillers_updates():
     results = []
     for seq_num in range(1, get_num_of_backends(application) + 1):
         logger.debug("running update for seq_num: %s" % seq_num)
-        bf = BlockFiller(app=application, seq_num=seq_num)
+        bf = BlockFiller(app=application, seq_num=seq_num,
+            fetch_num_of_blocks=application.config.get('FETCH_NUM_OF_BLOCKS'))
         #time.sleep(1)
         results.append(bf.update())
     return results

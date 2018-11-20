@@ -5,8 +5,6 @@ from genesis_block_explorer.models.genesis.aux.session import (
 )
 
 from genesis_block_explorer.models.genesis.aux.block import BlockModel
-#from genesis_block_explorer.models.genesis.aux.tx import TxModel
-#from genesis_block_explorer.models.genesis.aux.tx.param import ParamModel
 
 from genesis_block_explorer.models.genesis.aux.filler import FillerIsLockedError
 from genesis_block_explorer.models.genesis.aux.block.filler import BlockFiller

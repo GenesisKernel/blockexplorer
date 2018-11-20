@@ -13,7 +13,6 @@ class ParamModel(db.Model):
     tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'),
                       comment="TX ID")
 
-    # main
     name = db.Column(db.String, comment="Name")
     value = db.Column(db.Text, comment="Value")
 

@@ -41,6 +41,8 @@ AUX_DB_ENGINE_DISCOVERY_MAP = {
     'aux_genesis': { 'backend_version': '20180830' },
 }
 
+FETCH_NUM_OF_BLOCKS = 50
+
 BACKEND_API_URLS = {
     1: 'http://localhost:7079/api/v2',
 }

@@ -85,13 +85,13 @@ class TxModel(db.Model, TxPrevNextItemMixin):
         session = kwargs.get('session', db.session)
         ParamModel = get_tx_params_model()
         data, params_dicts = cls.prepare_from_dict(data)
-        logger.debug("data: %s" % data)
-        logger.debug("params_dicts: %s" % params_dicts)
+        #logger.debug("data: %s" % data)
+        #logger.debug("params_dicts: %s" % params_dicts)
 
         tx = cls(**data)
         session.add(tx)
         for param in params_dicts:
-            p = ParamModel(name=param['name'], value=param['value'])
+            p = ParamModel(name=param['name'], value=str(param['value']))
             tx.params.append(p)
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()
