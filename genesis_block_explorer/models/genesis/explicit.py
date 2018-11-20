@@ -141,19 +141,6 @@ class EsModel(db.Model):
         if not cls.__ecosystem_id__:
             raise EcosystemIsNotSetError("current ecosystem is '%s'" % cls.__ecosystem_id__)
 
-class EsKeysCommon(EsModel):
-    _tablename_suffix_ = '_keys'
-    __tablename__ = '1_keys'
-    #__table_args__ = {'extend_existing': True}
-    __bind_key__ = None
-
-    id = db.Column(db.Integer, primary_key=True)
-    pub = db.Column(db.LargeBinary)
-    amount = db.Column(db.Numeric)
-    multi = db.Column(db.Integer)
-    #delete = db.Column(db.Integer)
-    #blocked = db.Column(db.Integer)
-
 
 class EsParams(EsModel):
     _tablename_suffix_ = '_parameters'
@@ -237,12 +224,27 @@ def get_ecosystem_model(**kwargs):
             __tablename__ = 'system_states'
     return Ecosystem
 
+class EsKeysCommon(EsModel):
+    _tablename_suffix_ = '_keys'
+    __tablename__ = '1_keys'
+    #__table_args__ = {'extend_existing': True}
+    __bind_key__ = None
+    __abstract__ = True
+
+    id = db.Column(db.Integer, primary_key=True)
+    pub = db.Column(db.LargeBinary)
+    amount = db.Column(db.Numeric)
+    multi = db.Column(db.Integer)
+    #delete = db.Column(db.Integer)
+    #blocked = db.Column(db.Integer)
+
 def get_keys_model(**kwargs):
     backend_features = kwargs.get('backend_features', None)
     if backend_features is None:
         backend_features = []
     if 'keys_tables_delete_to_blocked' in backend_features:
-        class EsKeys(EsKeysCommon):
+        class EsKeysDynamicCommon(EsKeysCommon):
+            __abstract__ = True
             maxpay = db.Column(db.Integer)
             deleted = db.Column(db.Integer)
             blocked = db.Column(db.Integer)
@@ -281,7 +283,8 @@ def get_keys_model(**kwargs):
         #    'to_dict': to_dict,
         #}
     else:
-        class EsKeys(EsKeysCommon):
+        class EsKeysDynamicCommon(EsKeysCommon):
+            __abstract__ = True
             delete = db.Column(db.Integer)
             block = db.Column(db.Integer)
 
@@ -318,6 +321,8 @@ def get_keys_model(**kwargs):
         #}
     #newclass = type('EsKeys', (EsKeysCommon,), attrs)
     #return newclass #EsKeys
+    class EsKeys(EsKeysDynamicCommon):
+        __table_args__ = {'extend_existing': True}
     return EsKeys
 
 

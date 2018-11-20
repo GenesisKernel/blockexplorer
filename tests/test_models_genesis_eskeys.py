@@ -27,8 +27,6 @@ from genesis_block_explorer.models.genesis.explicit import (
 )
 
 sm = SessionManager(app=app)
-EsKeys = get_keys_model(backend_features=sm.get_be_features(1))
-Ecosystem = get_ecosystem_model(backend_features=sm.get_be_features(1))
 
 @with_setup(my_setup, my_teardown)
 def test_session_manager():
@@ -37,27 +35,52 @@ def test_session_manager():
 @with_setup(my_setup, my_teardown)
 def test_keys_class():
     seq_num = 1
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(seq_num))
+    keys_model= get_keys_model(backend_features=sm.get_be_features(seq_num))
 
     e_caught = False
     try:
-        EsKeys.check_ecosystem()
+        keys_model.check_ecosystem()
     except EcosystemIsNotSetError as e:
         e_caught = True
     assert e_caught
 
-    assert len(EsKeys.query.with_session(sm.get(seq_num)).all()) \
+    assert keys_model.query.with_session(sm.get(seq_num)).count() \
             >= len(app.config.get('DB_ENGINE_DISCOVERY_MAP'))
 
 @with_setup(my_setup, my_teardown)
 def test_ecosystem_class():
     seq_num = 1
-    assert len(Ecosystem.query.with_session(sm.get(seq_num)).all()) >= 1
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(seq_num))
+    assert es_model.query.with_session(sm.get(seq_num)).count() >= 1
 
 @with_setup(my_setup, my_teardown)
 def test_ecosystem_and_keys_class():
     seq_num = 1
-    for es in Ecosystem.query.with_session(sm.get(seq_num)).all():
-        EsKeys.set_ecosystem(es.id)
-        assert len(EsKeys.query.with_session(sm.get(seq_num)).all()) \
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(seq_num))
+    keys_model= get_keys_model(backend_features=sm.get_be_features(seq_num))
+    for es in es_model.query.with_session(sm.get(seq_num)).all():
+        keys_model.set_ecosystem(es.id)
+        assert keys_model.query.with_session(sm.get(seq_num)).count() \
             >= len(app.config.get('DB_ENGINE_DISCOVERY_MAP'))
+        #print("ecosystem: %s keys: %s" % (keys_model.get_ecosystem(), keys_model.query.with_session(sm.get(seq_num)).all()))
 
+@with_setup(my_setup, my_teardown)
+def test_ecosystem_and_keys_dynamic_class():
+    seq_num = 1
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(1))
+    for es in es_model.query.with_session(sm.get(seq_num)).all():
+        model = get_ecosystem_model(backend_features=sm.get_be_features(seq_num))
+        es = model.query.with_session(sm.get(seq_num)).get_or_404(es.id)
+        k_model = get_keys_model(backend_features=sm.get_be_features(seq_num))
+        #print("k_model.columns: %s" % k_model.__table__.columns)
+
+@with_setup(my_setup, my_teardown)
+def test_ecosystem_and_keys_dynamic_class2():
+    seq_num = 1
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(1))
+    for es in es_model.query.with_session(sm.get(seq_num)).all():
+        model = get_ecosystem_model(backend_features=sm.get_be_features(seq_num))
+        es = model.query.with_session(sm.get(seq_num)).get_or_404(es.id)
+        k_model = get_keys_model(backend_features=sm.get_be_features(seq_num))
+        #print("k_model.columns: %s" % k_model.__table__.columns)

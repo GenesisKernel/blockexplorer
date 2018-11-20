@@ -61,8 +61,8 @@ class DataTablesEcosystemMembers(DataTablesExt):
 
 @app.route("/genesis/database/<int:id>/ecosystem/<int:ecosystem_id>/members")
 def ecosystem_members(id, ecosystem_id):
-    model = get_ecosystem_model(backend_features=sm.get_be_features(id))
-    es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(id))
+    es = es_model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
     column_names = ['Key ID', 'Amount', 'Public Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
     return render_template('genesis/ecosystem_members.html',
@@ -75,8 +75,8 @@ def ecosystem_members(id, ecosystem_id):
 
 @app.route('/dt/genesis/database/<int:id>/ecosystem/<int:ecosystem_id>/members')
 def dt_ecosystem_members(id, ecosystem_id):
-    model = get_ecosystem_model(backend_features=sm.get_be_features(id))
-    es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(id))
+    es = es_model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
     model = get_keys_model(backend_features=sm.get_be_features(id))
     model.set_ecosystem(ecosystem_id)
     column_ids = ['id', 'amount', 'pub']
