@@ -5,7 +5,7 @@ PRODUCT_BRAND_NAME = "Apla"
 PRODUCT_NAME = "%s %s" % (PRODUCT_BRAND_NAME, "Block Explorer")
 
 CSRF_ENABLED = True
-SECRET_KEY = '4dGHrurbHy3v6GWi'
+SECRET_KEY = 'TWBt-1Cuz-GPtN-3vm2'
 
 TIME_FORMAT = '%a, %d %b %Y %H:%M:%S'
 CELERY_BROKER_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
@@ -19,30 +19,56 @@ REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'default.sqlite')
+#SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
-    'db_engine'  : 'sqlite:///' + os.path.join(basedir, 'db_engine.sqlite'),
-    'genesis_helpers': 'sqlite:///' + os.path.join(basedir, 'helpers.sqlite'),
-    'aux_genesis_helpers'  : 'sqlite:///' + os.path.join(basedir, 'aux_helpers.sqlite'),
+    #'db_engine': 'sqlite:///:memory:',
 
-    'genesis': 'postgresql://genesis:genesis@localhost:5432/genesis',
-    'aux_genesis': 'sqlite:///' + os.path.join(basedir, 'aux_genesis.sqlite'),
+    'db_engine'  : 'sqlite:///' + os.path.join(basedir, 'db_engine.sqlite'),
+    'test_db_engine'  : 'sqlite:///' + os.path.join(basedir, 'test_db_engine.sqlite'),
+    #'genesis_helpers': 'sqlite:///:memory:',
+    'genesis_helpers': 'sqlite:///' + os.path.join(basedir, 'genesis_helpers.sqlite'),
+    'aux_genesis_helpers'  : 'sqlite:///' + os.path.join(basedir, 'aux_genesis_helpers.sqlite'),
+    #'test_aux_genesis_helpers'  : 'sqlite:///:memory:',
+    'test_aux_genesis_helpers'  : 'sqlite:///' + os.path.join(basedir, 'test_aux_genesis_helpers.sqlite'),
+
+    'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
+    'genesis2': 'postgresql://postgres:genesis@localhost:15432/genesis2',
+    'genesis3': 'postgresql://postgres:genesis@localhost:15432/genesis3',
+    'test_genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
+    'test_genesis2': 'postgresql://postgres:genesis@localhost:15432/genesis2',
+    'test_genesis3': 'postgresql://postgres:genesis@localhost:15432/genesis3',
+
+    'aux_genesis1': 'sqlite:///' + os.path.join(basedir, 'aux_genesis1.sqlite'),
+    'aux_genesis2': 'sqlite:///' + os.path.join(basedir, 'aux_genesis2.sqlite'),
+    'aux_genesis3': 'sqlite:///' + os.path.join(basedir, 'aux_genesis3.sqlite'),
+    'test_aux_genesis1': 'sqlite:///' + os.path.join(basedir, 'test_aux_genesis1.sqlite'),
+    'test_aux_genesis2': 'sqlite:///' + os.path.join(basedir, 'test_aux_genesis2.sqlite'),
+    'test_aux_genesis3': 'sqlite:///' + os.path.join(basedir, 'test_aux_genesis3.sqlite'),
 }
 
 ENABLE_DATABASE_EXPLORER = False
 ENABLE_DATABASE_SELECTOR = False
 
 DB_ENGINE_DISCOVERY_MAP = {
-    'genesis': { 'backend_version': '20180830' },
+    'genesis1': { 'backend_version': '20180830' },
+    'genesis2': { 'backend_version': '20180830' },
+    'genesis3': { 'backend_version': '20180830' },
 }
 
 AUX_HELPERS_BIND_NAME = 'aux_genesis_helpers'
 
 AUX_DB_ENGINE_DISCOVERY_MAP = {
-    'aux_genesis': { 'backend_version': '20180830' },
+    'aux_genesis1': { 'backend_version': '20180830' },
+    'aux_genesis2': { 'backend_version': '20180830' },
+    'aux_genesis3': { 'backend_version': '20180830' },
 }
 
 BACKEND_API_URLS = {
-    1: 'http://localhost:7079/api/v2',
+    1: 'http://localhost:17301/api/v2',
+    2: 'http://localhost:17302/api/v2',
+    3: 'http://localhost:17303/api/v2',
+    #4: 'http://localhost:17304/api/v2',
+    #5: 'http://localhost:17305/api/v2',
 }
 
 BACKEND_VERSION_FEATURES_MAP = {

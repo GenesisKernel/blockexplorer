@@ -54,3 +54,6 @@ celerybeat.pid
 
 # tmp
 tmp
+
+# config
+config.py
