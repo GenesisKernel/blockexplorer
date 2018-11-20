@@ -48,9 +48,6 @@
                         <li class=""><a href="/genesis/backend/{{ valid_db_id }}/transactions" class="">Transactions</a></li>
                         <li class=""><a href="/genesis/database/{{ valid_db_id }}/ecosystems" class="">Ecosystems</a></li>
                         <li class=""><a href="/genesis/database/{{ valid_db_id }}/sys_params_adv" class="">System Parameters</a></li>
-                        <!--
-                            <li class=""><a href="/genesis/database/{{ valid_db_id}}/full_nodes" class="">Full Nodes</a></li>
-                        -->
                         {% if config.ENABLE_DATABASE_EXPLORER %}
                         <li class=""><a href="/db-engine/databases" class="">Database Explorer</a></li>
                         {% endif %}
@@ -71,7 +68,7 @@
                         <!--
                         <li class=" dropdown"><a href="#" class="dropdown-toggle " data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">DB Engine<span class="caret"></span></a>
                             <ul class="dropdown-menu">
-                                <li><a href="{{ url_for('databases') }}">Databases</a></li>
+                                <li><a href="#">Databases</a></li>
                             </ul>
                         </li>
                         <li class=" dropdown"><a href="#" class="dropdown-toggle active" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Main<span class="caret"></span></a>
