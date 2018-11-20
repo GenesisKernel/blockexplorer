@@ -25,6 +25,7 @@ def key_id_to_ukey_id(key_id):
     return str(int(key_id) & 0xffffffffffffffff)
 
 def update_dict_with_key_id(data, **kwargs):
+    key_id_to_str = kwargs.get('key_id_to_str', True)
     src_key_id_name = kwargs.get('src_key_id_name', 'key_id')
     dst_key_id_name = kwargs.get('dst_key_id_name', src_key_id_name)
     if src_key_id_name in data:
@@ -37,7 +38,11 @@ def update_dict_with_key_id(data, **kwargs):
         data['ukey_id'] = '0'
     if src_key_id_name != dst_key_id_name:
         del data[src_key_id_name]
+    if key_id_to_str:
+        data[dst_key_id_name] = str(key_id)
+    else:
         data[dst_key_id_name] = key_id
+    print("update_dict_with_key_id 1 data: %s" % data)
     return data
 
 def ts_time_to_dt_time(ts_time):
