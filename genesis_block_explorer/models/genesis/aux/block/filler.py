@@ -53,13 +53,16 @@ class BlockFiller(Filler):
         self.do_if_locked(**kwargs)
         self.lock(**kwargs)
         max_block_id = get_max_block_id(self.seq_num)
-
+        #print("BlockFiller.fill_all_blocks 2 max_block_id: %s" % max_block_id)
         for from_block_id in range(1, max_block_id, fetch_num_of_blocks):
             to_block_id = max_block_id if from_block_id + fetch_num_of_blocks > max_block_id else from_block_id + fetch_num_of_blocks
+            cnt = fetch_num_of_blocks if max_block_id - from_block_id > fetch_num_of_blocks else max_block_id - from_block_id
+            #print("BlockFiller.fill_all_blocks 3 from_block_id: %s to_block_id: %s cnt: %s" % (from_block_id, to_block_id, cnt))
             BlockModel.update_from_block_set(
-                get_detailed_blocks(self.seq_num, from_block_id, to_block_id),
+                get_detailed_blocks(self.seq_num, from_block_id, count),
                 session=self.aux_sm.get(self.seq_num)
             )
+        #print("BlockFiller.fill_all_blocks 4 loop is over")
         self.unlock(**kwargs)
         self.add_event(caller='fill_all_blocks', stage='finished')
         

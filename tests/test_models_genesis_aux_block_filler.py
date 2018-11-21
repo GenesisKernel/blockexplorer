@@ -21,13 +21,14 @@ seq_nums = (1, ) # 2, 3)
 involved_models = []
 
 @with_setup(my_setup, my_teardown)
-def test_fill_block():
+def NOtest_fill_block():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
     sm = AuxSessionManager(app=app)
     seq_num = 1
-    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    )
     block_id = 1
     f.fill_block(block_id)
 
@@ -38,18 +39,20 @@ def test_fill_all_blocks():
                                        aux_db_engine_name_prefix='test_aux_')
     sm = AuxSessionManager(app=app)
     seq_num = 1
-    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    fetch_num_of_blocks=10)
     f.fill_all_blocks()
 
 @with_setup(my_setup, my_teardown)
-def test_update():
+def NOtest_update():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
     sm = AuxSessionManager(app=app)
     seq_num = 1
     session = sm.get(seq_num)
-    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    fetch_num_of_blocks=10)
     assert session.query(BlockModel).count() == 0
     block_ids = (1, 2, 3, 4)
     for block_id in block_ids:
@@ -61,14 +64,15 @@ def test_update():
     assert session.query(BlockModel).count() > 4
 
 @with_setup(my_setup, my_teardown)
-def test_clear():
+def NOtest_clear():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
     sm = AuxSessionManager(app=app)
     seq_num = 1
     session = sm.get(seq_num)
-    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    fetch_num_of_blocks=10)
     assert session.query(BlockModel).count() == 0
     f.unlock()
     block_ids = (1, 2, 3, 4)
