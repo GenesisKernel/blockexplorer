@@ -46,6 +46,9 @@ AUX_DB_ENGINE_DISCOVERY_MAP = {
     #'aux_genesis3': { 'backend_version': '20180830' },
 }
 
+SOCKETIO_HOST = '127.0.0.1'
+SOCKETIO_PORT = 8080
+
 FETCH_NUM_OF_BLOCKS = 50
 
 BACKEND_API_URLS = {

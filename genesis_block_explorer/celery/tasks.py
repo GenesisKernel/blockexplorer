@@ -33,8 +33,8 @@ def block_filler_update(seq_num):
     result = bf.update()
     logger.debug("result: %s" % result)
     if result:
-        host = '127.0.0.1'
-        port = 5000
+        host = application.config.get('SOCKETIO_HOST', '127.0.0.1')
+        port = application.config.get('SOCKETIO_PORT', 5000)
         timeout = 1
         if tcpping(host=host, port=port, timeout=timeout):
             socketIO = SocketIO(host, port)
