@@ -1,6 +1,7 @@
 import logging
 
 from sqlalchemy import func
+from genesis_blockchain_api_client.errors import ServerError
 
 from ..filler import Filler
 
@@ -58,10 +59,23 @@ class BlockFiller(Filler):
             to_block_id = max_block_id if from_block_id + fetch_num_of_blocks > max_block_id else from_block_id + fetch_num_of_blocks
             cnt = fetch_num_of_blocks if max_block_id - from_block_id > fetch_num_of_blocks else max_block_id - from_block_id
             #print("BlockFiller.fill_all_blocks 3 from_block_id: %s to_block_id: %s cnt: %s" % (from_block_id, to_block_id, cnt))
-            BlockModel.update_from_block_set(
-                get_detailed_blocks(self.seq_num, from_block_id, count),
-                session=self.aux_sm.get(self.seq_num)
-            )
+            try:
+                BlockModel.update_from_block_set(
+                    get_detailed_blocks(self.seq_num, from_block_id, cnt),
+                    session=self.aux_sm.get(self.seq_num)
+                )
+            except ServerError as e:
+                logger.error("Error: %s" % e)
+                logger.info("Switching to single block fetching mode")
+                for block_id in range(from_block_id, to_block_id):
+                    print("single block_id: %s " % block_id)
+                    try:
+                        BlockModel.update_from_block_set(
+                            get_detailed_blocks(self.seq_num, block_id, 1),
+                            session=self.aux_sm.get(self.seq_num)
+                        )
+                    except ServerError as e:
+                        logger.error("Can't fetch block id: %s. Error: %s" % (block_id, e))
         #print("BlockFiller.fill_all_blocks 4 loop is over")
         self.unlock(**kwargs)
         self.add_event(caller='fill_all_blocks', stage='finished')
