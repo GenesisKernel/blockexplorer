@@ -4,7 +4,17 @@ Genesis Block Explorer CLI Manager
 
 Usage:
   cli_manage add-bind --name=<name> --value=<value> [--config-path=<config-path>]
+  cli_manage add-be-url --name=<name> --value=<value> [--config-path=<config-path>]
   cli_manage add-db-engine --bind-name=<bind-name> --backend-version=<backend-version> [--config-path=<config-path>]
+  cli_manage add-aux-db-engine --bind-name=<bind-name> --backend-version=<backend-version> [--config-path=<config-path>]
+  cli_manage set-redis-url --value=<value> [--config-path=<config-path>]
+  cli_manage set-enable-database-explorer --value=<value> [--config-path=<config-path>]
+  cli_manage set-enable-database-selector --value=<value> [--config-path=<config-path>]
+  cli_manage set-celery-broker-url --value=<value> [--config-path=<config-path>]
+  cli_manage set-celery-result-backend --value=<value> [--config-path=<config-path>]
+  cli_manage set-socketio-host --value=<value> [--config-path=<config-path>]
+  cli_manage set-socketio-port --value=<value> [--config-path=<config-path>]
+  cli_manage set-aux-helpers-bind-name --value=<value> [--config-path=<config-path>]
   cli_manage aux-blocks-stat <seq-num>
   cli_manage aux-blocks-lock <seq-num>
   cli_manage aux-blocks-is-locked <seq-num>

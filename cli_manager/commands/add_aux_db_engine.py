@@ -1,4 +1,4 @@
-""" The add-bind command. """
+""" The add-aux-db-engine command. """
 
 from json import dumps
 
@@ -18,8 +18,8 @@ def get_config_path(config_path=None):
     else:
         return os.path.join(os.path.dirname(get_script_path()), 'config.py')
 
-class AddDbEngine(Base):
-    """ Add DB Engine/Params to config """
+class AddAuxDbEngine(Base):
+    """ Add Aux DB Engine/Params to config """
 
     def run(self):
         config_path = get_config_path(self.options.get("--config-path"))
@@ -29,6 +29,6 @@ class AddDbEngine(Base):
         backend_version = self.options.get("--backend-version")
         if bind_name and backend_version:
             config.parse()
-            config.parsed.add_db_engine(bind_name, backend_version)
+            config.parsed.add_aux_db_engine(bind_name, backend_version)
             config.parsed_to_content()
             config.save()
