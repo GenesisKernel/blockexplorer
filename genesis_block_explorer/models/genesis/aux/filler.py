@@ -103,10 +103,12 @@ class Filler:
             return
         if self.is_locked:
             msg = "Filler is locked."
-            if self.latest_lock:
-                msg += " Lock info: Date/Time: %s, PID: %d, Context: %s, Engine: %s, Session: %s, Process Alive: %s" % (self.latest_lock.created_at, self.latest_lock.process_id, self.latest_lock.context, self.aux_sm.get_engine(self.seq_num), self.aux_sm.get(self.seq_num), check_pid(self.latest_lock.process_id))
+            ll = self.latest_lock
+            if ll and hasattr(ll, 'created_at') and hasattr(ll, 'process_id') \
+            and hasattr(ll, 'context'):
+                msg += " Lock info: Date/Time: %s, PID: %d, Context: %s, Engine: %s, Session: %s, Process Alive: %s" % (str(ll.created_at), int(ll.process_id), str(ll.context), self.aux_sm.get_engine(self.seq_num), self.aux_sm.get(self.seq_num), check_pid(ll.process_id))
             else:
-                msg += " No lock info available."
+                msg += " No proper lock info available but this: Last Lock object: %s, Engine: %s, Session: %s" % (str(ll), self.aux_sm.get_engine(self.seq_num), self.aux_sm.get(self.seq_num))
             logger.warning(msg)
             raise FillerIsLockedError(msg)
 
