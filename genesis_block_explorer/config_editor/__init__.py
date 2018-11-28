@@ -1,15 +1,8 @@
 import ast
 import astunparse
 import autopep8
-import distutils
 
-def to_bool(value):
-    if str(value).lower() in ("yes", "y", "true",  "t", "1", "enable", "allow", "permit"):
-        return True
-    elif str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}", "disable", "deny", "reject"):
-        return False
-    else:
-        return False
+from ..utils import to_bool
 
 class Config:
     def load(self):
@@ -66,7 +59,6 @@ class ConfigParsed:
     def find_aux_helpers_bind_name(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'AUX_HELPERS_BIND_NAME']
 
-
     def find_backend_api_urls(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'BACKEND_API_URLS']
 
@@ -75,6 +67,9 @@ class ConfigParsed:
 
     def find_aux_db_engine_discovery_map(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'AUX_DB_ENGINE_DISCOVERY_MAP']
+
+    def find_sqla_binds(self):
+        return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'SQLALCHEMY_BINDS']
 
     def set_enable_database_explorer(self, value):
         _value = ast.NameConstant(to_bool(value))
@@ -116,37 +111,57 @@ class ConfigParsed:
         for aux_helpers_bind_name in self.find_aux_helpers_bind_name(): 
             aux_helpers_bind_name.value = _value
 
-    def add_bind(self, name, value):
+    def add_sqla_bind(self, name, value):
         for sqla_bind in self.find_sqla_binds():
             _name = ast.Str(s=name)
             _value = ast.Str(s=value)
             sqla_bind.value.keys.append(_name)
             sqla_bind.value.values.append(_value)
 
-    def add_be_url(self, name, value):
-        for be_api_url in self.find_backend_api_urls():
+    def clear_sqla_binds(self):
+        for sqla_bind in self.find_sqla_binds():
+            sqla_bind.value.keys.clear()
+            sqla_bind.value.values.clear()
+
+    def add_backend_api_url(self, name, value):
+        for bau in self.find_backend_api_urls():
             _name = ast.Num(n=int(name))
             _value = ast.Str(s=value)
-            be_api_url.value.keys.append(_name)
-            be_api_url.value.values.append(_value)
+            bau.value.keys.append(_name)
+            bau.value.values.append(_value)
+
+    def clear_backend_api_urls(self):
+        for bau in self.find_backend_api_urls():
+            bau.value.keys.clear()
+            bau.value.values.clear()
 
     def add_db_engine(self, bind_name, backend_version):
-        for db_engine in self.find_db_engine_discovery_map():
+        for dbe in self.find_db_engine_discovery_map():
             _bind_name = ast.Str(s=bind_name)
             dict_keys = [ast.Str(s='backend_version')]
             dict_values = [ast.Str(s=backend_version)]
             _dict = ast.Dict(keys=dict_keys, values=dict_values)
-            db_engine.value.keys.append(_bind_name)
-            db_engine.value.values.append(_dict)
+            dbe.value.keys.append(_bind_name)
+            dbe.value.values.append(_dict)
+
+    def clear_db_engines(self):
+        for dbe in self.find_db_engine_discovery_map():
+            dbe.value.keys.clear()
+            dbe.value.values.clear()
 
     def add_aux_db_engine(self, bind_name, backend_version):
-        for db_engine in self.find_aux_db_engine_discovery_map():
+        for dbe in self.find_aux_db_engine_discovery_map():
             _bind_name = ast.Str(s=bind_name)
             dict_keys = [ast.Str(s='backend_version')]
             dict_values = [ast.Str(s=backend_version)]
             _dict = ast.Dict(keys=dict_keys, values=dict_values)
-            db_engine.value.keys.append(_bind_name)
-            db_engine.value.values.append(_dict)
+            dbe.value.keys.append(_bind_name)
+            dbe.value.values.append(_dict)
+
+    def clear_aux_db_engines(self):
+        for dbe in self.find_aux_db_engine_discovery_map():
+            dbe.value.keys.clear()
+            dbe.value.values.clear()
 
     def to_source(self):
         return astunparse.unparse(self.parsed)

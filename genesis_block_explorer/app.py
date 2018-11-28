@@ -1,5 +1,37 @@
 import os
+import argparse
+
 from flask import Flask, g
+
+from .utils import to_bool
+
+def get_default_config_path():
+    return os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'config.py')
+
+def get_args(**kwargs):
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--config',
+                        default=get_default_config_path(),
+                        help='Path to configuration file')
+    parser.add_argument('--debug', dest='debug', action='store_true',
+                        help='Run in debug mode')
+    parser.add_argument('--no-debug', dest='debug', action='store_false',
+                        help='Run in non-debug mode')
+    parser.set_defaults(debug=False)
+    if kwargs.get('allow_unknown_args', True):
+        args, unknown = parser.parse_known_args()
+        return args
+    else:
+        return parser.parse_args()
+
+def get_config_path(*args, **kwargs):
+    if len(args) > 0 and args[0]:
+        return args[0]
+    else:
+        return os.path.abspath(get_args(**kwargs).config)
+
+def get_debug_mode():
+    return to_bool(os.environ.get('DEBUG') or get_args().debug)
 
 def start_db_for_app(app):
     if 'start_db_for_app_counter' not in g:
@@ -37,7 +69,9 @@ def start_db_for_app_once(app):
 def create_lean_app(**kwargs):
     app = Flask(__name__)
 
-    app.config.from_pyfile('../config.py')
+    config_path = kwargs.get('config_path', get_config_path())
+    if config_path:
+        app.config.from_pyfile(config_path)
     if kwargs.get('debug', False):
         app.config['DEBUG'] = True
     with app.app_context():
@@ -46,11 +80,11 @@ def create_lean_app(**kwargs):
     return app
 
 def create_app(**kwargs):
-    #global celery 
-
     app = Flask(__name__)
 
-    app.config.from_pyfile('../config.py')
+    config_path = kwargs.get('config_path', get_config_path())
+    if config_path:
+        app.config.from_pyfile(config_path)
     if kwargs.get('debug', False):
         app.config['DEBUG'] = True
 
@@ -105,4 +139,5 @@ def create_app(**kwargs):
 
     return app
 
-
+#if __name__ == '__main__':
+#    print("args: %s" % get_args)

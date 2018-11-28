@@ -87,3 +87,11 @@ def cmp_lists_to_update_first(one, two):
         'to_add': set(two) - set(one),
     }
     return s
+
+def to_bool(value):
+    if str(value).lower() in ("yes", "y", "true",  "t", "1", "enable", "allow", "permit"):
+        return True
+    elif str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}", "disable", "deny", "reject"):
+        return False
+    else:
+        return False
