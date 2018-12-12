@@ -57,4 +57,4 @@ celerybeat-schedule.db
 tmp
 
 # config
-config.py
+/config.py
