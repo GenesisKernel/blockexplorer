@@ -1,3 +1,5 @@
+from .config import Config
+
 from .config_add_sqla_bind import ConfigAddSqlaBind
 from .config_clear_sqla_binds import ConfigClearSqlaBinds
 

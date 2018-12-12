@@ -1,6 +1,7 @@
 import ast
 import astunparse
 import autopep8
+import re
 
 from ..utils import to_bool
 
@@ -103,6 +104,7 @@ class ConfigParsed:
         for aux_helpers_bind_name in self.find_aux_helpers_bind_name(): 
             aux_helpers_bind_name.value = ast.Str(s=value)
 
+
     def add_sqla_bind(self, name, value):
         for sqla_bind in self.find_sqla_binds():
             sqla_bind.value.keys.append(ast.Str(s=name))
@@ -113,6 +115,16 @@ class ConfigParsed:
             sqla_bind.value.keys.clear()
             sqla_bind.value.values.clear()
 
+    def set_sqla_binds(self, sqla_binds):
+        self.clear_sqla_binds()
+        for sqla_bind in sqla_binds.split(';'):
+            m = re.search('^([^\:]*):(.*)$', sqla_bind)
+            if m:
+                name = m.group(1)
+                value = m.group(2)
+                self.add_sqla_bind(name, value)
+
+
     def add_backend_api_url(self, name, value):
         for bau in self.find_backend_api_urls():
             bau.value.keys.append(ast.Num(n=int(name)))
@@ -122,6 +134,15 @@ class ConfigParsed:
         for bau in self.find_backend_api_urls():
             bau.value.keys.clear()
             bau.value.values.clear()
+
+    def set_backend_api_urls(self, backend_api_urls):
+        self.clear_backend_api_urls()
+        i = 1
+        for backend_api_url in backend_api_urls.split(';'):
+            name = str(i)
+            self.add_backend_api_url(str(i), backend_api_url)
+            i += 1
+
 
     def add_db_engine(self, bind_name, backend_version):
         for dbe in self.find_db_engine_discovery_map():
@@ -136,6 +157,16 @@ class ConfigParsed:
             dbe.value.keys.clear()
             dbe.value.values.clear()
 
+    def set_db_engines(self, db_engines):
+        self.clear_db_engines()
+        for item in db_engines.split(';'):
+            m = re.search('^([^\:]*):(.*)$', item)
+            if m:
+                name = m.group(1)
+                be_ver= m.group(2)
+                self.add_db_engine(name, be_ver)
+
+
     def add_aux_db_engine(self, bind_name, backend_version):
         for dbe in self.find_aux_db_engine_discovery_map():
             dict_keys = [ast.Str(s='backend_version')]
@@ -148,6 +179,16 @@ class ConfigParsed:
         for dbe in self.find_aux_db_engine_discovery_map():
             dbe.value.keys.clear()
             dbe.value.values.clear()
+
+    def set_aux_db_engines(self, aux_db_engines):
+        self.clear_aux_db_engines()
+        for item in aux_db_engines.split(';'):
+            m = re.search('^([^\:]*):(.*)$', item)
+            if m:
+                name = m.group(1)
+                be_ver= m.group(2)
+                self.add_aux_db_engine(name, be_ver)
+
 
     def to_source(self):
         return astunparse.unparse(self.parsed)
