@@ -36,6 +36,9 @@ class ConfigParsed:
     def __init__(self, source):
         self.parsed = ast.parse(source)
 
+    def find_product_brand_name(self):
+        return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'PRODUCT_BRAND_NAME']
+
     def find_enable_database_explorer(self):
         return [x for x in ast.walk(self.parsed) if isinstance(x, ast.Assign) and x.targets and x.targets[0].id == 'ENABLE_DATABASE_EXPLORER']
 
@@ -188,6 +191,11 @@ class ConfigParsed:
                 name = m.group(1)
                 be_ver= m.group(2)
                 self.add_aux_db_engine(name, be_ver)
+
+
+    def set_product_brand_name(self, value):
+        for product_brand_name in self.find_product_brand_name(): 
+            product_brand_name.value = ast.Str(s=value)
 
 
     def to_source(self):

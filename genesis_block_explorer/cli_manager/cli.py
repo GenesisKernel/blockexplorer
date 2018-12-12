@@ -3,7 +3,7 @@
 Genesis Block Explorer CLI Manager
 
 Usage:
-  genbc-blex-cli config [--set-sqla-binds=<sqla-binds>] [--set-backend-api-urls=<backend-api-urls>] [--set-db-engines=<db-engines>] [--set-redis-url=<redis-url>] [--set-aux-db-engines=<aux-db-engines>] [--set-celery-broker-url=<celery-broker-url>] [--set-celery-result-backend=<celery-result-backend>] [--set-socketio-host=<socketio-host>] [--set-socketio-port=<socketio-port>] [--set-enable-database-explorer=<enable-database-explorer>] [--set-enable-database-selector=<enable-database-selector>] [--config=<config-path>]
+  genbc-blex-cli config [--set-sqla-binds=<sqla-binds>] [--set-backend-api-urls=<backend-api-urls>] [--set-db-engines=<db-engines>] [--set-redis-url=<redis-url>] [--set-aux-db-engines=<aux-db-engines>] [--set-celery-broker-url=<celery-broker-url>] [--set-celery-result-backend=<celery-result-backend>] [--set-socketio-host=<socketio-host>] [--set-socketio-port=<socketio-port>] [--set-enable-database-explorer=<enable-database-explorer>] [--set-enable-database-selector=<enable-database-selector>] [--set-product-brand-name=<product-brand-name>] [--config=<config-path>]
   genbc-blex-cli config-add-sqla-bind --name=<name> --value=<value> [--config=<config-path>]
   genbc-blex-cli config-clear-sqla-binds [--config=<config-path>]
   genbc-blex-cli config-add-backend-api-url --name=<name> --value=<value> [--config=<config-path>]
@@ -19,6 +19,7 @@ Usage:
   genbc-blex-cli config-set-celery-result-backend <value> [--config=<config-path>]
   genbc-blex-cli config-set-socketio-host <value> [--config=<config-path>]
   genbc-blex-cli config-set-socketio-port <value> [--config=<config-path>]
+  genbc-blex-cli config-set-product-brand-name <value> [--config=<config-path>]
   genbc-blex-cli config-set-aux-helpers-bind-name <value> [--config=<config-path>]
   genbc-blex-cli aux-blocks-stat <seq-num> [--config=<config-path>]
   genbc-blex-cli aux-blocks-lock <seq-num> [--config=<config-path>]
