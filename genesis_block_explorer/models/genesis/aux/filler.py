@@ -46,11 +46,11 @@ class Filler:
             if recreate_tables_if_exist:
                 try:
                     model.__table__.drop(engine)
-                except exc.OperationalError as e:
+                except (exc.OperationalError, exc.ProgrammingError) as e:
                     logger.info("Recreate if exists mode: can't drop table for model %s, error: %s" % (model, e))
             try:
                 model.__table__.create(engine)
-            except exc.OperationalError as e:
+            except (exc.OperationalError, exc.ProgrammingError) as e:
                 logger.info("Can'n create table for model %s, error: %s" % (model, e))
 
     def check_dbs(self):
