@@ -69,7 +69,8 @@ def start_db_for_app_once(app):
 def create_lean_app(**kwargs):
     app = Flask(__name__)
 
-    config_path = kwargs.get('config_path', get_config_path())
+    config_path = kwargs.get('config_path',
+                             os.environ.get('CONFIG', get_config_path()))
     if config_path:
         app.config.from_pyfile(config_path)
     if kwargs.get('debug', False):
@@ -82,7 +83,8 @@ def create_lean_app(**kwargs):
 def create_app(**kwargs):
     app = Flask(__name__)
 
-    config_path = kwargs.get('config_path', get_config_path())
+    config_path = kwargs.get('config_path',
+                             os.environ.get('CONFIG', get_config_path()))
     if config_path:
         app.config.from_pyfile(config_path)
     if kwargs.get('debug', False):
