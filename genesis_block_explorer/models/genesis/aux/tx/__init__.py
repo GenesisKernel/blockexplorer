@@ -57,7 +57,8 @@ class TxModel(db.Model, TxPrevNextItemMixin):
     contract_name = db.Column(db.String, comment="Contract Name")
     ukey_id = db.Column(db.String, comment="Key ID")
     type = db.Column(db.Integer, comment="Type")
-    block_id = db.Column(db.Integer, db.ForeignKey('blocks.id'),
+    block_id = db.Column(db.Integer, db.ForeignKey('blocks.id',
+                                                   ondelete='CASCADE'),
                          comment="Block ID")
 
     # main
@@ -65,7 +66,8 @@ class TxModel(db.Model, TxPrevNextItemMixin):
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     params = db.relationship('ParamModel', uselist=True,
-                             backref=db.backref('transactions'))
+                             backref=db.backref('transactions',
+                                                cascade='delete'))
 
     @classmethod
     def prepare_from_dict(cls, data, **kwargs):

@@ -56,10 +56,12 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     tx_count = db.Column(db.Integer, comment="Number of Transactions")
 
     #header
-    header_id = db.Column(db.Integer, db.ForeignKey('blocks_headers.id'),
-                          comment="Header Record ID")
+    header_id = db.Column(db.Integer,
+                       db.ForeignKey('blocks_headers.id', ondelete='CASCADE'),
+                       comment="Header Record ID")
     header = db.relationship('HeaderModel',
-                             backref=db.backref('block', uselist=False))
+                             backref=db.backref('block', uselist=False,
+                                                cascade='delete'))
 
     # main
     key_id = db.Column(db.BigInteger, comment="Raw Key ID")

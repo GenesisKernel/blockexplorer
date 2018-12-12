@@ -10,7 +10,8 @@ class ParamModel(db.Model):
     __tablename__ = 'tx_params'
 
     id = db.Column(db.Integer, primary_key=True, comment="Parameter record ID")
-    tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id'),
+    tx_id = db.Column(db.Integer, db.ForeignKey('transactions.id',
+                                                ondelete='CASCADE'),
                       comment="TX ID")
 
     name = db.Column(db.String, comment="Name")
