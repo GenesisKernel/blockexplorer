@@ -21,12 +21,12 @@ def create_models_tables_for_engine(engine, models=[],
         if recreate_if_exists:
             try:
                 model.__table__.drop(engine)
-            except exc.OperationalError as e:
+            except (exc.OperationalError, exc.ProgrammingError) as e:
                 logger.info("Can'n drop table '%s' for model '%s', error: %s" % (model.__tablename__, model, e))
 
         try:
             model.__table__.create(engine)
-        except exc.OperationalError as e:
+        except (exc.OperationalError, exc.ProgrammingError) as e:
             logger.info("Can'n create table '%s' for model '%s', error: %s" % (model, model, e))
 
 class TableManager:
