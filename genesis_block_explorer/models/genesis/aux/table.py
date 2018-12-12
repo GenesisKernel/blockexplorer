@@ -34,8 +34,9 @@ class TableManager:
         self.app = kwargs.get('app', app)
         self.num_of_backends = kwargs.get('num_of_backends',
                                           get_num_of_backends(self.app))
-        self.models = kwargs.get('models', [BlockModel, HeaderModel, TxModel,
-                                            ParamModel, MemberModel])
+        self.models = kwargs.get('models', [ParamModel, TxModel,
+                                            HeaderModel, MemberModel,
+                                            BlockModel])
         self.sm = kwargs.get('session_manager', SessionManager(app=self.app))
         self.recreate_if_exists = kwargs.get('recreate_if_exists', False)
 
