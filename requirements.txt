@@ -22,3 +22,11 @@ docopt
 autopep8
 git+https://github.com/blitzstern5/genesis-blockchain-tools
 git+https://github.com/blitzstern5/genesis-blockchain-api-client
+nose
+celery
+redis==2.10.6
+Flask-SocketIO
+eventlet
+socketIO-client
+diskcache
+tcpping

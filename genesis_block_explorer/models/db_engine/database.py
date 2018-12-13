@@ -3,39 +3,37 @@ from pprint import pprint
 import types
 import pickle 
 import six
+import logging
+from diskcache import Cache
 
 from dictalchemy import make_class_dictable
 
 from sqlalchemy import inspect 
 from sqlalchemy.ext.hybrid import hybrid_property, hybrid_method
-from sqlalchemy.types import *
 from sqlalchemy.exc import OperationalError
 
 from sqlalchemy.ext.declarative import declarative_base
+
 from flask_jsontools import JsonSerializableBase
 
-from .autoser import AutoSerialize
 from ...logging import get_logger
 from .engine import (
     db_engine_to_name,
     get_discovered_db_engines,
     get_discovered_db_engine_info,
+    NoBindNameFoundError,
 )
 
-Base = declarative_base()
-logger = get_logger()
+logger = logging.getLogger(__name__)
 
 from ...db import db
 
 from ...utils import is_number, semirepr
 
-#from .automap import Base
-
-class DatabaseError(Exception):
-    pass
-
-class DatabaseUnknown(DatabaseError):
-    pass
+class Error(Exception): pass
+class AppIsNotSetError(Error): pass
+class DatabaseError(Exception): pass
+class DatabaseUnknown(DatabaseError): pass
 
 class Database(db.Model):
 
@@ -70,6 +68,86 @@ class Database(db.Model):
         d['tables'] = [t.as_dict() for t in self.tables]
         return d
 
+    @classmethod
+    def add_from_engine(cls, engine, **kwargs):
+        app = kwargs.get('app')
+        session = kwargs.get('session', db.session)
+        bind_name = kwargs.get('bind_name')
+        backend_version = kwargs.get('backend_version')
+
+        use_cache = kwargs.get('use_cache', False) and app
+        if use_cache:
+            flush_cache = kwargs.get('flush_cache', False)
+            cache_path = kwargs.get('cache_path',
+                                    app.config.get('DISKCACHE_PATH'))
+            cache_timeout = kwargs.get('DISKCACHE_DBEX_DATABASE_TIMEOUT')
+            cache = Cache(cache_path)
+            if flush_cache:
+                cache.pop(engine)
+
+        try:
+            if use_cache:
+                inspector = cache.get(engine)
+            else:
+                inspector = inspect(engine)
+                if use_cache:
+                    cache.set(engine, inspector, cache_timeout)
+        except OperationalError as e:
+            logger.error("cant inspect engine %s" % engine)
+            raise e
+        except Exception as e:
+            raise e
+        db_name = db_engine_to_name(engine)
+        try:
+            info = get_discovered_db_engine_info(bind_name)
+        except NoBindNameFoundError:
+            logger.warning("No info found to engine bind name '%s'" % bind_name)
+            info = ''
+        if not backend_version and info:
+            try:
+                backend_version = info['backend_version']
+            except TypeError as e:
+                pass
+            except KeyError as e:
+                pass
+            except Exception as e:
+                raise e
+
+        d = Database(name=db_name, bind_name=bind_name, engine=engine.name,
+                     driver=engine.driver, backend_version=backend_version)
+        table_names = inspector.get_table_names()
+        for table_name in table_names:
+            logger.debug("table_name: %s" % (table_name,))
+            t = Table(name=table_name)
+            column_names = inspector.get_columns(table_name)
+            for column in column_names:
+                c = Column(**column)
+                t.columns.append(c)
+            d.tables.append(t)
+        session.add(d)
+        if kwargs.get('db_session_commit_enabled', True):
+            session.commit()
+
+    @classmethod
+    def add_from_engines(cls, **kwargs):
+        engines = kwargs.get('engines', None)
+        app = kwargs.get('app')
+        db_engine_discovery_map_name = \
+          kwargs.get( 'db_engine_discovery_map_name', 'DB_ENGINE_DISCOVERY_MAP')
+        if not engines:
+            if app:
+                engines = get_discovered_db_engines(app,
+                      db_engine_discovery_map_name=db_engine_discovery_map_name)
+            else:
+                raise AppIsNotSetError
+        logger.debug("engines: %s " % engines)
+        if type(engines) in (list, tuple):
+            for engine in engines:
+                add_from_engine(engine)
+        elif type(engines) == dict:
+            for bind_name, engine in engines.items(): 
+                cls.add_from_engine(engine, app=app, bind_name=bind_name)
+
 class Table(db.Model):
 
     __bind_key__ = 'db_engine'
@@ -100,7 +178,6 @@ class Table(db.Model):
         d['columns'] = [c.as_dict() for c in self.columns]
         return d
 
-
 class Column(db.Model):
 
     __bind_key__ = 'db_engine'
@@ -123,7 +200,6 @@ class Column(db.Model):
                   'comment', 'primary_key')
     _SKIP_PARAMS = ('id',)
     _SPECIAL_PARAMS=('type', 'default', 'autoincrement',)
-
 
     @hybrid_property
     def type(self):
@@ -155,7 +231,6 @@ class Column(db.Model):
     def default(self, value):
         self._default_pickle = pickle.dumps(value)
         self._default_repr = semirepr(value)
-
 
     @hybrid_property
     def autoincrement(self):
@@ -213,42 +288,8 @@ def init_db():
     db.create_all(bind='db_engine')
 
 def import_data(app, **kwargs):
-    engines = kwargs.get('engines', None)
-    if not engines:
-        engines = get_discovered_db_engines(app)
-    for bind_name, engine in engines.items(): 
-        try:
-            inspector = inspect(engine)
-        except OperationalError as e:
-            logger.error("cant inspect engine %s" % engine)
-            continue
-        except Exception as e:
-            raise e
-        db_name = db_engine_to_name(engine)
-        info = get_discovered_db_engine_info(bind_name)
-        backend_version = ''
-        if info:
-            try:
-                backend_version = info['backend_version']
-            except TypeError as e:
-                pass
-            except KeyError as e:
-                pass
-            except Exception as e:
-                raise e
-
-        logger.debug("bind_name: %s engine: %s db_name: %s" \
-                    % (bind_name, engine, db_name))
-        d = Database(name=db_name, bind_name=bind_name,
-                     engine=engine.name, driver=engine.driver,
-                     backend_version=backend_version)
-        for table_name in inspector.get_table_names():
-            logger.debug("table_name: %s" % (table_name,))
-            t = Table(name=table_name)
-            for column in inspector.get_columns(table_name):
-                c = Column(**column)
-                t.columns.append(c)
-            d.tables.append(t)
-        db.session.add(d)
-    db.session.commit()
+    Column.query.delete()
+    Table.query.delete()
+    Database.query.delete()
+    Database.add_from_engines(app=app)
 

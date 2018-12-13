@@ -5,5 +5,5 @@ if __name__ == '__main__':
     from os.path import dirname, abspath
     sys.path.insert(0, dirname(dirname(abspath(__file__))))
 
-    from cli_manager.cli import main
+    from genesis_block_explorer.app import cli_manager.cli import main
     main()
