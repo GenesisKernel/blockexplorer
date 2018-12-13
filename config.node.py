@@ -11,9 +11,6 @@ TIME_FORMAT = '%a, %d %b %Y %H:%M:%S'
 CELERY_BROKER_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
 CELERY_RESULT_BACKEND = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
 
-REDIS_HOST = os.environ.get('REDIS_HOST') or 'localhost'
-REDIS_PORT = os.environ.get('REDIS_PORT') or 6379
-REDIS_PASSWORD = os.environ.get('REDIS_PASSWORD') or ''
 REDIS_URL = os.environ.get('REDIS_URL') or 'redis://localhost:6379/0'
 
 SQLALCHEMY_TRACK_MODIFICATIONS = False
