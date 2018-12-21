@@ -52,7 +52,7 @@ class LockModel(db.Model):
     def get_latest_lock(cls, **kwargs):
         context = kwargs.get('context', 'default_context')
         session = kwargs.get('session', db.session)
-        qs = session.query(cls, func.max(cls.created_at).label("value")).filter_by(context=context).all()
+        qs = session.query(cls, func.max(cls.created_at).label("value")).filter_by(context=context).group_by(cls).all()
         if qs and qs[0] and qs[0][0]:
             return qs[0][0]
 
