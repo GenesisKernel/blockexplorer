@@ -23,7 +23,7 @@ from genesis_block_explorer.models.genesis.aux.session import (
 )
 
 from genesis_block_explorer.models.genesis.aux.utils import (
-    key_id_to_ukey_id
+    key_id_to_wallet
 )
 
 from .blockchain_commons import d1, d3, get_txs
@@ -88,7 +88,7 @@ def test_member_add_record_from_dict():
     d = {
         'ecosystem_id': 1,
         'key_id': -123,
-        'ukey_id': '456',
+        'wallet': '456',
         'pub': 'a9823432',
         'amount': 13.1,
         'maxpay': 10.2,
@@ -116,7 +116,7 @@ def assert_eskeys_and_member_instances_eq(eskeys_inst, member_inst):
             assert float(v) == float(getattr(member_inst, k))
         elif k == 'id':
             assert v == member_inst.key_id
-            assert key_id_to_ukey_id(v) == member_inst.ukey_id
+            assert key_id_to_wallet(v) == member_inst.wallet
         else:
             assert v == getattr(member_inst, k)
     assert eskeys_inst.get_ecosystem() == member_inst.ecosystem_id

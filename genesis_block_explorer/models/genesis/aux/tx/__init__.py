@@ -55,14 +55,14 @@ class TxModel(db.Model, TxPrevNextItemMixin):
     time_dt = db.Column(db.String, comment="Time")
     hash = db.Column(db.String(512), index=True, comment="Hash")
     contract_name = db.Column(db.String, comment="Contract Name")
-    ukey_id = db.Column(db.String, comment="Key ID")
+    wallet = db.Column(db.String, comment="Wallet")
     type = db.Column(db.Integer, comment="Type")
     block_id = db.Column(db.Integer, db.ForeignKey('blocks.id',
                                                    ondelete='CASCADE'),
                          comment="Block ID")
 
     # main
-    key_id = db.Column(db.BigInteger, comment="Raw Key ID")
+    key_id = db.Column(db.BigInteger, comment="Key ID")
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     params = db.relationship('ParamModel', uselist=True,

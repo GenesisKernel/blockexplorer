@@ -50,7 +50,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     id = db.Column(db.Integer, primary_key=True, comment="Block ID")
     time_dt = db.Column(db.String, comment="Time")
     hash = db.Column(db.String, comment="Hash")
-    ukey_id = db.Column(db.String, comment="Key ID")
+    wallet = db.Column(db.String, comment="Wallet")
     ecosystem_id = db.Column(db.Integer, comment="EcoSystem ID")
     node_position = db.Column(db.Integer, comment="Node Position")
     tx_count = db.Column(db.Integer, comment="Number of Transactions")
@@ -64,7 +64,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
                                                 cascade='delete'))
 
     # main
-    key_id = db.Column(db.BigInteger, comment="Raw Key ID")
+    key_id = db.Column(db.BigInteger, comment="Key ID")
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     rollbacks_hash = db.Column(db.String, comment="Rollbacks Hash")

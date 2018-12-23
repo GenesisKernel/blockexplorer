@@ -2,6 +2,8 @@ import datetime
 
 from flask import current_app as app
 
+from genesis_blockchain_tools.convert.genesis import key_id_to_wallet
+
 from ....logging import get_logger
 
 logger = get_logger(app)
@@ -21,9 +23,6 @@ def get_valid_seq_num(seq_num, **kwargs):
     #print("get_valid_seq_num() final seq_num: %s" % seq_num)
     return seq_num
 
-def key_id_to_ukey_id(key_id):
-    return str(int(key_id) & 0xffffffffffffffff)
-
 def update_dict_with_key_id(data, **kwargs):
     key_id_to_str = kwargs.get('key_id_to_str', True)
     src_key_id_name = kwargs.get('src_key_id_name', 'key_id')
@@ -33,9 +32,9 @@ def update_dict_with_key_id(data, **kwargs):
     else:
         key_id = 0
     if key_id:
-        data['ukey_id'] = key_id_to_ukey_id(key_id)
+        data['wallet'] = key_id_to_wallet(key_id)
     else:
-        data['ukey_id'] = '0'
+        data['wallet'] = '0'
     if src_key_id_name != dst_key_id_name:
         del data[src_key_id_name]
     if key_id_to_str:

@@ -88,7 +88,7 @@ def test_update_from_main_model_instance_via_manager():
     d = {
         'ecosystem_id': 1,
         'key_id': -123,
-        'ukey_id': '456',
+        'wallet': '456',
         'pub': 'a9823432',
         'amount': 13.1,
         'maxpay': 10.2,
