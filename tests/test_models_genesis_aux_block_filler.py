@@ -9,19 +9,19 @@ from genesis_block_explorer.models.genesis.aux.block import BlockModel
 from genesis_block_explorer.models.genesis.aux.filler import FillerIsLockedError
 from genesis_block_explorer.models.genesis.aux.block.filler import BlockFiller
 
-from .test_models_genesis_aux_block import (
-    my_setup,
-    my_teardown,
-    create_tables,
-    create_test_app,
+from .utils import (
+    common_setup, create_test_app, my_teardown,
     update_aux_db_engine_discovery_map,
 )
 
 seq_nums = (1, ) # 2, 3)
 involved_models = []
 
+def my_setup():
+    common_setup(seq_nums=seq_nums, involved_models=involved_models)
+
 @with_setup(my_setup, my_teardown)
-def NOtest_fill_block():
+def test_fill_block():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
@@ -29,7 +29,7 @@ def NOtest_fill_block():
     seq_num = 1
     f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
                     )
-    block_id = 1
+    block_id = 2
     f.fill_block(block_id)
 
 @with_setup(my_setup, my_teardown)
@@ -39,12 +39,14 @@ def test_fill_all_blocks():
                                        aux_db_engine_name_prefix='test_aux_')
     sm = AuxSessionManager(app=app)
     seq_num = 1
+    session = sm.get(seq_num)
     f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
                     fetch_num_of_blocks=10)
     f.fill_all_blocks()
+    print("num of blocks: %s" % session.query(BlockModel).count())
 
 @with_setup(my_setup, my_teardown)
-def NOtest_update():
+def test_update():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
@@ -64,7 +66,7 @@ def NOtest_update():
     assert session.query(BlockModel).count() > 4
 
 @with_setup(my_setup, my_teardown)
-def NOtest_clear():
+def test_clear():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')

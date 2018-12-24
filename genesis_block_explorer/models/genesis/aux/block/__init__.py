@@ -1,6 +1,13 @@
 import sqlalchemy
 from sqlalchemy.ext.hybrid import hybrid_method
 
+from sqlalchemy.schema import DropTable
+from sqlalchemy.ext.compiler import compiles
+
+@compiles(DropTable, "postgresql")
+def _compile_drop_table(element, compiler, **kwargs):
+    return compiler.visit_drop_table(element) + " CASCADE"
+
 from flask import current_app as app
 
 from .....db import db
@@ -75,7 +82,18 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     stop_count = db.Column(db.Integer, comment="Stop Count")
     transactions = db.relationship('TxModel', uselist=True,
                                    backref=db.backref('blocks'))
+    fill_error = db.Column(db.Boolean, comment="BLock Data Fill Error",
+                           default=False)
 
+    @classmethod
+    def add_fill_error(cls, block_id, **kwargs):
+        session = kwargs.get('session', db.session)
+        block_id = int(block_id)
+        block = cls(id=block_id, fill_error=True)
+        session.add(block)
+        if kwargs.get('db_session_commit_enabled', True):
+            session.commit()
+        return block
 
     @classmethod
     def prepare_from_dict(cls, data, **kwargs):
