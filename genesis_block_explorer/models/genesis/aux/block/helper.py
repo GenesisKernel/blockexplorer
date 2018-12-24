@@ -12,7 +12,7 @@ class BlockHelperBaseModel(GenericHelperBaseModel):
 
     @classmethod
     def get_drop_fields(cls):
-        return ['header_id', 'header', 'transactions', 'time_ts', 'time_dt', 'time_dtu', 'key_id', 'wallet', 'node_position', 'ecosystem_id']
+        return ['header_id', 'header', 'transactions', 'time_ts', 'time_dt', 'time_dtu', 'key_id', 'address', 'node_position', 'ecosystem_id']
 
     @classmethod
     def update_from_main_model_instance(cls, mm_instance, **kwargs):

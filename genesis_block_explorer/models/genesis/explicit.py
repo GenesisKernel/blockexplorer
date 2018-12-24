@@ -102,7 +102,7 @@ class TransactionsStatus(db.Model):
     time = db.Column(db.Integer)
     type  = db.Column(db.Integer)
     ecosystem = db.Column(db.Integer)
-    wallet_id = db.Column(db.BigInteger)
+    key_id = db.Column(db.BigInteger)
     block_id = db.Column(db.Integer)
     error = db.Column(db.String)
 

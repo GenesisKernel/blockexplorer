@@ -28,7 +28,7 @@ class HeaderModel(db.Model):
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     ecosystem_id = db.Column(db.Integer, comment="EcoSystem ID")
     key_id = db.Column(db.BigInteger, comment="Key ID")
-    wallet = db.Column(db.String, comment="Wallet")
+    address = db.Column(db.String, comment="Address")
     node_position = db.Column(db.Integer, comment="Node Position")
     sign = db.Column(db.String, comment="Signature")
     hash = db.Column(db.String, comment="Hash")

@@ -77,7 +77,7 @@ def transactions(id):
 @app.route('/dt/genesis/database/<int:id>/transactions')
 def dt_transactions(id):
     model = TransactionsStatus
-    column_ids = ['time', 'wallet_id', 'ecosystem',
+    column_ids = ['time', 'key_id', 'ecosystem',
                   'block_id', 'hash', 'type', 'error']
     columns = [getattr(model, col_id) for col_id in column_ids]
     dt_columns = [ColumnDT(m) for m in columns]

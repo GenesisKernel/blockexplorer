@@ -49,7 +49,7 @@ class MemberModel(db.Model, MemberPrevNextItemMixin):
     id = db.Column(db.Integer, primary_key=True, comment="Member Record ID")
     ecosystem_id = db.Column(db.Integer, comment="Ecosystem ID")
     key_id = db.Column(db.Integer, comment="Key ID")
-    wallet = db.Column(db.String, comment="Wallet")
+    address = db.Column(db.String, comment="Address")
     pub = db.Column(db.String, comment="Public Key")
     amount = db.Column(db.Numeric, comment="Amount")
     maxpay = db.Column(db.Numeric, comment="Max Pay")
@@ -64,7 +64,7 @@ class MemberModel(db.Model, MemberPrevNextItemMixin):
             'id': self.id,
             'ecosystem_id': self.ecosystem_id,
             'key_id': self.key_id,
-            'wallet': self.wallet,
+            'address': self.address,
             'pub': self.pub,
             'amount': self.amount,
             'maxpay': self.maxpay,

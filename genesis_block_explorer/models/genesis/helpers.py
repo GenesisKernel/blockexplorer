@@ -343,7 +343,7 @@ class TransactionStatusHelper(db.Model):
             'hash': 'Hash',
             'ecosystem': 'Ecosystem ID',
             'block_id': 'Block ID',
-            'wallet_id': 'Sender Key ID',
+            'key_id': 'Sender Key ID',
             'error': 'Error',
         }
         r = TransactionRows(db_id=db_id, tx_hash=tx_hash)
@@ -351,7 +351,7 @@ class TransactionStatusHelper(db.Model):
         p_data = None
         for col_name, col_title in d_names_titles.items():
             val = getattr(tx, col_name)
-            if col_name in ['ecosystem', 'wallet_id', 'block_id']:
+            if col_name in ['ecosystem', 'key_id', 'block_id']:
                 r.add(TxItem(col_name, val, a="d 0 int", t=col_title))
             elif col_name in ['error']:
                 r.add(TxItem(col_name, val, a="d 0 str", t=col_title))

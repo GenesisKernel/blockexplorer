@@ -50,7 +50,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     id = db.Column(db.Integer, primary_key=True, comment="Block ID")
     time_dt = db.Column(db.String, comment="Time")
     hash = db.Column(db.String, comment="Hash")
-    wallet = db.Column(db.String, comment="Wallet")
+    address = db.Column(db.String, comment="Address")
     ecosystem_id = db.Column(db.Integer, comment="EcoSystem ID")
     node_position = db.Column(db.Integer, comment="Node Position")
     tx_count = db.Column(db.Integer, comment="Number of Transactions")

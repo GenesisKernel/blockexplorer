@@ -55,7 +55,7 @@ class TxModel(db.Model, TxPrevNextItemMixin):
     time_dt = db.Column(db.String, comment="Time")
     hash = db.Column(db.String(512), index=True, comment="Hash")
     contract_name = db.Column(db.String, comment="Contract Name")
-    wallet = db.Column(db.String, comment="Wallet")
+    address = db.Column(db.String, comment="Address")
     type = db.Column(db.Integer, comment="Type")
     block_id = db.Column(db.Integer, db.ForeignKey('blocks.id',
                                                    ondelete='CASCADE'),
