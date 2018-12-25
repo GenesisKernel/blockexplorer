@@ -1,3 +1,4 @@
+from sqlalchemy import exc
 from sqlalchemy.ext.hybrid import hybrid_method
 
 from flask import current_app as app
@@ -66,6 +67,7 @@ class TxModel(db.Model, TxPrevNextItemMixin):
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     params = db.relationship('ParamModel', uselist=True,
+                             cascade="all, delete-orphan",
                              backref=db.backref('transactions',
                                                 cascade='delete'))
 
@@ -125,4 +127,24 @@ class TxModel(db.Model, TxPrevNextItemMixin):
         return cls.update_from_list_of_dicts(txs, session=session,
         db_session_commit_enabled=kwargs.get('db_session_commit_enabled', True))
 
-
+    @hybrid_method
+    def delete(self, **kwargs):
+        session = kwargs.get('session', db.session)
+        if self.params:
+            self.params.clear()
+        session.delete(self)
+        if kwargs.get('db_session_commit_enabled', True):
+            try:
+                session.commit()
+            except exc.SQLAlchemyError:
+                session.rollback()
+            
+    @classmethod
+    def clear(cls, **kwargs):
+        session = kwargs.get('session', db.session)
+        [i.delete(session=session, db_session_commit_enabled=False) for i in session.query(cls).all()]
+        if kwargs.get('db_session_commit_enabled', True):
+            try:
+                session.commit()
+            except exc.SQLAlchemyError:
+                session.rollback()

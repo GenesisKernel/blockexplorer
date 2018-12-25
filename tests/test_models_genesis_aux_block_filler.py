@@ -20,8 +20,52 @@ involved_models = []
 def my_setup():
     common_setup(seq_nums=seq_nums, involved_models=involved_models)
 
+def my_setup_no_drop():
+    common_setup(seq_nums=seq_nums, involved_models=involved_models,
+                 recreate_if_exists=False)
+
+@with_setup(my_setup_no_drop, my_teardown)
+def test_fill_blocks__1():
+    app = create_test_app()
+    sm = AuxSessionManager(app=app)
+    seq_num = 1
+    session = sm.get(seq_num)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    fetch_num_of_blocks=15)
+    try:
+        session.query(BlockModel).delete()
+        session.commit()
+    except:
+        session.rollback()
+    assert session.query(BlockModel).count() == 0
+    f.fill_blocks(1, 10)
+    len = session.query(BlockModel).count()
+    print("len: %s" % len)
+    assert len == 10
+
+@with_setup(my_setup_no_drop, my_teardown)
+def test_fill_blocks__2():
+    app = create_test_app()
+    sm = AuxSessionManager(app=app)
+    seq_num = 1
+    session = sm.get(seq_num)
+    f = BlockFiller(app=app, seq_num=seq_num, recreate_tables_if_exist=True,
+                    fetch_num_of_blocks=15)
+    try:
+        session.query(BlockModel).delete()
+        session.commit()
+    except:
+        session.rollback()
+    assert session.query(BlockModel).count() == 0
+    f.fill_blocks(1, 35)
+    len = session.query(BlockModel).count()
+    print("len: %s" % len)
+    assert len == 35
+
+
+
 @with_setup(my_setup, my_teardown)
-def test_fill_block():
+def NOtest_fill_block():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
@@ -33,7 +77,7 @@ def test_fill_block():
     f.fill_block(block_id)
 
 @with_setup(my_setup, my_teardown)
-def test_fill_all_blocks():
+def NOtest_fill_all_blocks():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
@@ -46,7 +90,7 @@ def test_fill_all_blocks():
     print("num of blocks: %s" % session.query(BlockModel).count())
 
 @with_setup(my_setup, my_teardown)
-def test_update():
+def NOtest_update():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')
@@ -66,7 +110,7 @@ def test_update():
     assert session.query(BlockModel).count() > 4
 
 @with_setup(my_setup, my_teardown)
-def test_clear():
+def NOtest_clear():
     app = create_test_app()
     new_map = update_aux_db_engine_discovery_map(app, force_update=True,
                                        aux_db_engine_name_prefix='test_aux_')

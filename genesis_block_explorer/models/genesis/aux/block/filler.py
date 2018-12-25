@@ -57,18 +57,24 @@ class BlockFiller(Filler):
         self.unlock(**kwargs)
         self.add_event(caller='fill_block', stage='finished')
 
-    def fill_all_blocks(self, **kwargs):
+    def fill_blocks(self, fetch_from_block_id, fetch_to_block_id, **kwargs):
         fetch_num_of_blocks = kwargs.get('fetch_num_of_blocks',
                                          self.fetch_num_of_blocks)
-        self.add_event(caller='fill_all_blocks', stage='started')
+        self.add_event(caller='fill_blocks', stage='started')
         self.do_if_locked(**kwargs)
         self.lock(**kwargs)
+        logger.debug("BlockFiller.fill_blocks 1 fetch_from_block_id: %s fetch_to_block_id: %s" % (fetch_to_block_id, fetch_to_block_id))
         max_block_id = get_max_block_id(self.seq_num)
-        logger.debug("BlockFiller.fill_all_blocks 2 max_block_id: %s" % max_block_id)
-        for from_block_id in range(1, max_block_id, fetch_num_of_blocks):
-            to_block_id = max_block_id if from_block_id + fetch_num_of_blocks > max_block_id else from_block_id + fetch_num_of_blocks
-            cnt = fetch_num_of_blocks if max_block_id - from_block_id > fetch_num_of_blocks else max_block_id - from_block_id
-            logger.debug("BlockFiller.fill_all_blocks 3 from_block_id: %s to_block_id: %s cnt: %s" % (from_block_id, to_block_id, cnt))
+        if fetch_to_block_id > max_block_id:
+            fetch_to_block_id = max_block_id
+        fetch_to_block_id += 1
+        print("fetch_from_block_id: %s fetch_to_block_id: %s fetch_num_of_blocks: %s" % (fetch_from_block_id, fetch_to_block_id, fetch_num_of_blocks))
+        for from_block_id in range(fetch_from_block_id, fetch_to_block_id,
+                                   fetch_num_of_blocks):
+            to_block_id = fetch_to_block_id if from_block_id + fetch_num_of_blocks > fetch_to_block_id else from_block_id + fetch_num_of_blocks
+            cnt = fetch_num_of_blocks if fetch_to_block_id - from_block_id > fetch_num_of_blocks else fetch_to_block_id - from_block_id
+            print("from_block_id: %s to_block_id: %s cnt: %s" % (from_block_id, to_block_id, cnt))
+            logger.debug("BlockFiller.fill_blocks 2 from_block_id: %s to_block_id: %s cnt: %s" % (from_block_id, to_block_id, cnt))
             try:
                 BlockModel.update_from_block_set(
                     get_detailed_blocks(self.seq_num, from_block_id, cnt),
@@ -93,6 +99,12 @@ class BlockFiller(Filler):
                                                   raw_error=str(e)))
                         session.commit()
         self.unlock(**kwargs)
+        self.add_event(caller='fill_blocks', stage='finished')
+
+    def fill_all_blocks(self, **kwargs):
+        self.add_event(caller='fill_all_blocks', stage='started')
+        max_block_id = get_max_block_id(self.seq_num)
+        self.fill_blocks(1, max_block_id, **kwargs)
         self.add_event(caller='fill_all_blocks', stage='finished')
         
     def update(self, **kwargs):
@@ -113,11 +125,20 @@ class BlockFiller(Filler):
                 self.fill_all_blocks(disable_locking=True)
                 updated = True
             elif aux_max_block_id < max_block_id:
-                BlockModel.update_from_block_set(
-                    get_detailed_blocks(self.seq_num, aux_max_block_id + 1,
-                                        max_block_id),
-                    session=session
-                )
+                try:
+                    BlockModel.update_from_block_set(
+                        get_detailed_blocks(self.seq_num, aux_max_block_id + 1,
+                                            max_block_id),
+                        session=session
+                    )
+                except ServerError as e:
+                    session = self.aux_sm.get(self.seq_num)
+                    BlockModel.add_fill_error(block_id, error=str(e),
+                                              raw_error=str(e),
+                                              session=session)
+                    session.add(BadBlockModel(id=block_id, error=str(e),
+                                              raw_error=str(e)))
+                    session.commit()
                 updated = True
         self.unlock(**kwargs)
         self.add_event(caller='update', stage='finished')
@@ -128,11 +149,14 @@ class BlockFiller(Filler):
         self.do_if_locked(**kwargs)
         self.lock(**kwargs)
         session = self.aux_sm.get(self.seq_num)
-        session.query(ParamModel).delete()
-        session.query(TxModel).delete()
-        session.query(BlockModel).delete()
-        session.query(HeaderModel).delete()
-        session.commit()
+        try:
+            session.query(ParamModel).delete()
+            session.query(TxModel).delete()
+            session.query(BlockModel).delete()
+            session.query(HeaderModel).delete()
+            session.commit()
+        except:
+            session.rollback()
         self.unlock(**kwargs)
         self.add_event(caller='clear', stage='finished')
 

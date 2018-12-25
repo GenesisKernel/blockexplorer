@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy import exc
 from sqlalchemy.ext.hybrid import hybrid_method
 
 from sqlalchemy.schema import DropTable
@@ -16,14 +17,16 @@ from ..utils import update_dict_with_key_id, update_dict_with_time
 from ..generic.prev_next_item import PrevNextItemMixin
 
 def get_req_models(bind_key=None):
+    from .error import ErrorModel
     from .header import HeaderModel
     from ..tx import TxModel
     from ..tx.param import ParamModel
     if bind_key:
+        ErrorModel.__bind_key__ = bind_key
         HeaderModel.__bind_key__ = bind_key
         TxModel.__bind_key__ = bind_key
         ParamModel.__bind_key__ = bind_key
-    return HeaderModel, TxModel, ParamModel
+    return ErrorModel, HeaderModel, TxModel, ParamModel
 
 logger = get_logger(app) 
 get_req_models()
@@ -67,6 +70,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
                        db.ForeignKey('blocks_headers.id', ondelete='CASCADE'),
                        comment="Header Record ID")
     header = db.relationship('HeaderModel',
+                             cascade="all",
                              backref=db.backref('block', uselist=False,
                                                 cascade='delete'))
 
@@ -81,19 +85,17 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     sys_update = db.Column(db.Boolean, comment="Sys Update")
     stop_count = db.Column(db.Integer, comment="Stop Count")
     transactions = db.relationship('TxModel', uselist=True,
-                                   backref=db.backref('blocks'))
-    fill_error = db.Column(db.Boolean, comment="BLock Data Fill Error",
-                           default=False)
+                                   cascade="all, delete-orphan",
+                                   backref=db.backref('blocks',
+                                                      cascade='delete'))
 
-    @classmethod
-    def add_fill_error(cls, block_id, **kwargs):
-        session = kwargs.get('session', db.session)
-        block_id = int(block_id)
-        block = cls(id=block_id, fill_error=True)
-        session.add(block)
-        if kwargs.get('db_session_commit_enabled', True):
-            session.commit()
-        return block
+    error_id = db.Column(db.Integer, db.ForeignKey('blocks_errors.id',
+                                                   ondelete='CASCADE'),
+                         comment="Block Error Record ID")
+    error = db.relationship('ErrorModel', cascade="all",
+                            backref=db.backref('block', uselist=False,
+                                               cascade='delete'))
+
 
     @classmethod
     def prepare_from_dict(cls, data, **kwargs):
@@ -109,7 +111,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
     @classmethod
     def update_from_dict(cls, data, **kwargs):
         session = kwargs.get('session', db.session)
-        HeaderModel, TxModel, ParamModel = get_req_models()
+        _, HeaderModel, TxModel, ParamModel = get_req_models()
         time, data, header, txs_data = cls.prepare_from_dict(data)
         block = cls(**data)
         session.add(block)
@@ -129,7 +131,8 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
             txs.append(tx)
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()
-        return data, txs
+        #return data, txs
+        return block
 
     @classmethod
     def update_from_block(cls, block, **kwargs):
@@ -156,4 +159,47 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
             session.commit()
         return l
 
+    @hybrid_method
+    def add_error(self, **kwargs):
+        session = kwargs.get('session', db.session)
+        ErrorModel, _, _, _ = get_req_models()
+        self.error = ErrorModel(block_id=self.id, error=kwargs.get('error'), 
+                                raw_error=kwargs.get('raw_error'))
+        if kwargs.get('db_session_commit_enabled', True):
+            session.commit()
+        return self.error
 
+    @classmethod
+    def create_bad_block(cls, block_id, **kwargs):
+        session = kwargs.get('session', db.session)
+        ErrorModel, _, _, _ = get_req_models()
+        block = cls(id=block_id)
+        block.add_error(error=kwargs['error'], raw_error=kwargs['raw_error'],
+                        db_session_commit_enabled=False)
+        if kwargs.get('db_session_commit_enabled', True):
+            session.commit()
+        return block
+
+    @hybrid_method
+    def delete(self, **kwargs):
+        session = kwargs.get('session', db.session)
+        if self.header:
+            session.delete(self.header)
+        if self.error:
+            session.delete(self.error)
+        session.delete(self)
+        if kwargs.get('db_session_commit_enabled', True):
+            try:
+                session.commit()
+            except exc.SQLAlchemyError:
+                session.rollback()
+            
+    @classmethod
+    def clear(cls, **kwargs):
+        session = kwargs.get('session', db.session)
+        [i.delete(session=session, db_session_commit_enabled=False) for i in session.query(cls).all()]
+        if kwargs.get('db_session_commit_enabled', True):
+            try:
+                session.commit()
+            except exc.SQLAlchemyError:
+                session.rollback()

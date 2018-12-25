@@ -16,7 +16,9 @@ from genesis_block_explorer.models.db_engine.engine import (
 from genesis_block_explorer.models.genesis.aux.config import (
     update_aux_db_engine_discovery_map
 )
+
 from genesis_block_explorer.models.genesis.aux.block import BlockModel
+from genesis_block_explorer.models.genesis.aux.block.error import ErrorModel
 from genesis_block_explorer.models.genesis.aux.block.header import HeaderModel
 from genesis_block_explorer.models.genesis.aux.tx import TxModel
 from genesis_block_explorer.models.genesis.aux.tx.param import ParamModel
@@ -29,10 +31,77 @@ from .blockchain_commons import d1, d3, d4, get_txs
 from .utils import common_setup, create_test_app, my_teardown
 
 seq_nums = (1, ) # 2, 3)
-involved_models = [BlockModel, HeaderModel, TxModel, ParamModel]
+involved_models = [BlockModel, HeaderModel, TxModel, ParamModel, ErrorModel]
 
 def my_setup():
     common_setup(seq_nums=seq_nums, involved_models=involved_models)
+
+def my_setup_no_drop():
+    common_setup(seq_nums=seq_nums, involved_models=involved_models,
+                 recreate_if_exists=False)
+
+@with_setup(my_setup, my_teardown)
+def test_add_remove():
+    app = create_test_app()
+    sm = AuxSessionManager(app=app)
+    sn = 1
+    session = sm.get(sn)
+    assert session.query(BlockModel).count() == 0
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(ErrorModel).count() == 0
+    block = Block(b64decode_hashes=True, from_detailed_dict=d3[0])
+    block_m = BlockModel.update_from_block(block, session=sm.get(sn))
+    assert isinstance(block_m, BlockModel)
+    assert session.query(BlockModel).count() == 1
+    assert session.query(HeaderModel).count() == 1
+    assert session.query(TxModel).count() == 2
+    assert session.query(ParamModel).count() == 4
+    assert session.query(ErrorModel).count() == 0
+    block_m.add_error(error="Test Error", raw_error="Test Raw Error")
+    assert session.query(ErrorModel).count() == 1
+    block_m.delete(session=session)
+    assert session.query(BlockModel).count() == 0
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(ErrorModel).count() == 0
+
+@with_setup(my_setup_no_drop, my_teardown)
+def test_add_clear():
+    app = create_test_app()
+    sm = AuxSessionManager(app=app)
+    sn = 1
+    session = sm.get(sn)
+    assert session.query(BlockModel).count() == 0
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(ErrorModel).count() == 0
+    block1 = Block(b64decode_hashes=True, from_detailed_dict=d3[0])
+    block1_m = BlockModel.update_from_block(block1, session=sm.get(sn))
+    block2 = Block(b64decode_hashes=True, from_detailed_dict=d3[1])
+    block2_m = BlockModel.update_from_block(block2, session=sm.get(sn))
+    assert isinstance(block1_m, BlockModel)
+    assert isinstance(block2_m, BlockModel)
+    assert block1_m != block2_m
+    assert session.query(BlockModel).count() == 2
+    assert session.query(HeaderModel).count() == 2
+    assert session.query(TxModel).count() == 4
+    assert session.query(ParamModel).count() == 8
+    assert session.query(ErrorModel).count() == 0
+    block1_m.add_error(error="Test 1 Error", raw_error="Test 1 Raw Error")
+    assert session.query(ErrorModel).count() == 1
+    block2_m.add_error(error="Test 2 Error", raw_error="Test 2 Raw Error")
+    assert session.query(ErrorModel).count() == 2
+    BlockModel.clear(session=session)
+    assert session.query(BlockModel).count() == 0
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ErrorModel).count() == 0
+    
 
 @with_setup(my_setup, my_teardown)
 def NOtest_get_bind_name():
@@ -81,7 +150,7 @@ def NOtest_update_from_block():
         pass
 
 @with_setup(my_setup, my_teardown)
-def test_add_fill_error():
+def NOtest_add_fill_error():
     app = create_test_app()
     sm = AuxSessionManager(app=app)
     sn = 1

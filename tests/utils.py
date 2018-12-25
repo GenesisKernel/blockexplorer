@@ -37,15 +37,18 @@ def create_tables(models, engine, recreate_if_exists=True):
 
 def create_tables_by_seq_nums(**kwargs):
     app = kwargs.get('app', create_test_app())
+    recreate_if_exists = kwargs.get('recreate_if_exists', True)
     _seq_nums = kwargs.get('seq_nums', seq_nums)
     _involved_models = kwargs.get('involved_models', involved_models)
     for seq_num in _seq_nums:
         asm = AuxSessionManager(app=app)
         print("test.utis create_tables_by_seq_nums 1 engine: %s" % asm.get_engine(seq_num))
-        create_tables(_involved_models, asm.get_engine(seq_num))
+        create_tables(_involved_models, asm.get_engine(seq_num),
+                      recreate_if_exists=recreate_if_exists)
 
 def common_setup(**kwargs):
     app = kwargs.get('app', create_test_app())
+    recreate_if_exists = kwargs.get('recreate_if_exists', True)
     _seq_nums = kwargs.get('seq_nums', seq_nums)
     _involved_models = kwargs.get('involved_models', involved_models)
 
@@ -55,7 +58,8 @@ def common_setup(**kwargs):
     with app.app_context():
         init_db()
     create_tables_by_seq_nums(app=app, seq_nums=_seq_nums,
-                              involved_models=_involved_models)
+                              involved_models=_involved_models,
+                              recreate_if_exists=recreate_if_exists)
 
 def my_teardown():
     pass
