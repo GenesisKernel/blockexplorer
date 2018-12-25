@@ -24,6 +24,12 @@ sm = SessionManager(app=app)
 class DataTablesEcosystemMembers(DataTablesExt):
     def ecosystem_members_post_query_process(self, **kwargs):
         logger.debug("ecosystems_post_query_process kwargs: %s" % kwargs)
+
+        key_ids = self.prepare_col_ids(
+                            col_ids=kwargs.get('key_ids'))
+        if not key_ids:
+            logger.warning("key_ids isn't set")
+        logger.debug("ecosystems_post_query_process avatar_ids : %s" % key_ids)
         
         avatar_ids = self.prepare_col_ids(
                             col_ids=kwargs.get('avatar_ids'))
@@ -48,6 +54,8 @@ class DataTablesEcosystemMembers(DataTablesExt):
                     for col_id, val in row.items():
                         if col_id in avatar_ids:
                             pass
+                        if col_id in key_ids:
+                            val = str(val)
                         if col_id in decimal_ids:
                             val = str(val)
                         if col_id in public_key_ids:
@@ -86,6 +94,7 @@ def dt_ecosystem_members(id, ecosystem_id):
     params = request.args.to_dict()
     rowTable = DataTablesEcosystemMembers(params, query, dt_columns)
     rowTable.ecosystem_members_post_query_process(db_id=id,
+                                          key_ids=[0],
                                           decimal_ids=1,
                                           public_key_ids=2,
                                           avatar_ids=[0],
