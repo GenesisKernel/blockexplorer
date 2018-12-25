@@ -63,7 +63,7 @@ class TxModel(db.Model, TxPrevNextItemMixin):
                          comment="Block ID")
 
     # main
-    key_id = db.Column(db.BigInteger, comment="Key ID")
+    key_id = db.Column(db.String, comment="Key ID")
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     params = db.relationship('ParamModel', uselist=True,

@@ -119,7 +119,7 @@ class FullNode(db.Model):
     tcp_address = db.Column(db.String)
     tcp_port = db.Column(db.String)
     api_url = db.Column(db.String)
-    key_id = db.Column(db.BigInteger)
+    key_id = db.Column(db.String)
     public_key = db.Column(db.String)
 
     @classmethod

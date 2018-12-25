@@ -9,7 +9,7 @@ from sqlalchemy.ext.compiler import compiles
 def _compile_drop_table(element, compiler, **kwargs):
     return compiler.visit_drop_table(element) + " CASCADE"
 
-from .....db import db
+from ......db import db
 
 #from . import BlockPrevNextItemMixin
 

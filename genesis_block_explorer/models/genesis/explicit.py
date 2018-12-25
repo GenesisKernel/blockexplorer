@@ -36,7 +36,7 @@ class BlockChain(db.Model):
     rollbacks_hash = db.Column(db.LargeBinary)
     data = db.Column(db.LargeBinary)
     ecosystem_id = db.Column(db.Integer)
-    key_id = db.Column(db.BigInteger)
+    key_id = db.Column(db.String)
     node_position = db.Column(db.BigInteger)
     time = db.Column(db.Integer)
     tx = db.Column(db.Integer)
@@ -102,7 +102,7 @@ class TransactionsStatus(db.Model):
     time = db.Column(db.Integer)
     type  = db.Column(db.Integer)
     ecosystem = db.Column(db.Integer)
-    key_id = db.Column(db.BigInteger)
+    key_id = db.Column(db.String)
     block_id = db.Column(db.Integer)
     error = db.Column(db.String)
 

@@ -1,7 +1,6 @@
 from nose import with_setup
 
-from flask import Flask, current_app
-
+from flask import Flask, current_app 
 from sqlalchemy import exc
 from sqlalchemy.engine.base import Engine
 from sqlalchemy.orm.session import Session
@@ -101,6 +100,26 @@ def test_add_clear():
     assert session.query(ParamModel).count() == 0
     assert session.query(TxModel).count() == 0
     assert session.query(ErrorModel).count() == 0
+
+@with_setup(my_setup_no_drop, my_teardown)
+def test_create_bad_block():
+    app = create_test_app()
+    sm = AuxSessionManager(app=app)
+    sn = 1
+    session = sm.get(sn)
+    assert session.query(BlockModel).count() == 0
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(ErrorModel).count() == 0
+    block_id = 123
+    block_m = BlockModel.create_error_block(block_id, session=sm.get(sn),
+                                           error="Error", raw_error="Raw Error")
+    assert session.query(BlockModel).count() == 1
+    assert session.query(HeaderModel).count() == 0
+    assert session.query(TxModel).count() == 0
+    assert session.query(ParamModel).count() == 0
+    assert session.query(ErrorModel).count() == 1
     
 
 @with_setup(my_setup, my_teardown)

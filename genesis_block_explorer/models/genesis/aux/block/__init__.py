@@ -2,12 +2,12 @@ import sqlalchemy
 from sqlalchemy import exc
 from sqlalchemy.ext.hybrid import hybrid_method
 
-from sqlalchemy.schema import DropTable
-from sqlalchemy.ext.compiler import compiles
-
-@compiles(DropTable, "postgresql")
-def _compile_drop_table(element, compiler, **kwargs):
-    return compiler.visit_drop_table(element) + " CASCADE"
+#from sqlalchemy.schema import DropTable
+#from sqlalchemy.ext.compiler import compiles
+#
+#@compiles(DropTable, "postgresql")
+#def _compile_drop_table(element, compiler, **kwargs):
+#    return compiler.visit_drop_table(element) + " CASCADE"
 
 from flask import current_app as app
 
@@ -75,7 +75,7 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
                                                 cascade='delete'))
 
     # main
-    key_id = db.Column(db.BigInteger, comment="Key ID")
+    key_id = db.Column(db.String, comment="Key ID")
     time_ts = db.Column(db.Integer, comment="Time (Stamp)")
     time_dtu = db.Column(db.String, comment="Time (UTC)")
     rollbacks_hash = db.Column(db.String, comment="Rollbacks Hash")
@@ -170,12 +170,13 @@ class BlockModel(db.Model, BlockPrevNextItemMixin):
         return self.error
 
     @classmethod
-    def create_bad_block(cls, block_id, **kwargs):
+    def create_error_block(cls, block_id, **kwargs):
         session = kwargs.get('session', db.session)
         ErrorModel, _, _, _ = get_req_models()
         block = cls(id=block_id)
         block.add_error(error=kwargs['error'], raw_error=kwargs['raw_error'],
                         db_session_commit_enabled=False)
+        session.add(block)
         if kwargs.get('db_session_commit_enabled', True):
             session.commit()
         return block
