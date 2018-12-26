@@ -10,7 +10,7 @@ from ...db import db
 
 from ...models.db_engine.model import get_model_data_by_db_id_and_table_name
 from ...models.db_engine.session import SessionManager
-from ...models.genesis.explicit import get_ecosystem_model, EsParams, EsKeys
+from ...models.genesis.explicit import  get_ecosystem_model
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from genesis_block_chain.parser.common_parse_data_full import parse_block

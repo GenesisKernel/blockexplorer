@@ -1,19 +1,17 @@
-from sqlalchemy.orm import scoped_session, sessionmaker
-from sqlalchemy import (
-    create_engine
-)
+from sqlalchemy.pool import StaticPool
+from sqlalchemy import create_engine
 
 from flask import current_app as app
 
 from ...logging import get_logger
+from ..utils import merge_two_dicts
 
 logger = get_logger(app)
 
-def merge_two_dicts(x, y):
-    """Given two dicts, merge them into a new dict as a shallow copy."""
-    z = x.copy()
-    z.update(y)
-    return z
+class Error(Exception): pass
+class NoSuchConfigKeyError(Error): pass
+class DbEngineMapIsEmptyError(Error): pass
+class NoBindNameFoundError(Error): pass
 
 def get_pq_engine_db_list(engine):
     if engine.name == "postgresql":
@@ -37,56 +35,19 @@ def db_engine_to_name(engine):
         db_name = str(engine.url)
     return db_name
 
-def get_discovered_db_engines_old(app, **kwargs):
-    engine_options = kwargs.get('engine_options', {
-        'convert_unicode': True,
-        'encoding': 'utf-8',
-    })
-    if 'DB_ENGINE_DISCOVERY_MAP' in app.config:
-        logger.error("HERE DB_ENGINE_DISCOVERY_MAP mode")
-        db_engine_discovery_map = app.config['DB_ENGINE_DISCOVERY_MAP']
-        logger.error("db_engine_discovery_map: %s" %  db_engine_discovery_map)
-    else:
-        db_engine_discovery_map = {}
-        if 'SQLALCHEMY_DATABASE_URI' in app.config:
-            db_engine_discovery_map['SQLALCHEMY_DATABASE_URI'] \
-                    = app.config['SQLALCHEMY_DATABASE_URI']
-        else:
-            db_engine_discovery_map['SQLALCHEMY_DATABASE_URI'] = None
-
-        if 'SQLALCHEMY_BINDS' in app.config:
-            db_engine_discovery_map['SQLALCHEMY_BINDS'] \
-                    = app.config['SQLALCHEMY_BINDS']
-        else:
-            db_engine_discovery_map['SQLALCHEMY_BINDS'] = {}
-
-    engines = {}
-    if 'SQLALCHEMY_DATABASE_URI' in db_engine_discovery_map:
-        engines['SQLALCHEMY_DATABASE_URI'] = create_engine(
-                    db_engine_discovery_map['SQLALCHEMY_DATABASE_URI'],
-                    **engine_options
-                    )
-
-    if 'SQLALCHEMY_BINDS' in db_engine_discovery_map \
-            and db_engine_discovery_map['SQLALCHEMY_BINDS']:
-                engines = merge_two_dicts(
-                    engines,
-                    {k: create_engine(v, **engine_options) for k, v in \
-                        db_engine_discovery_map['SQLALCHEMY_BINDS'].items()})
-    logger.error("engines: %s" % engines)
-    return engines
-
 def get_discovered_db_engines(app, **kwargs):
     all_engines_options = kwargs.get('all_engines_options', {
         'convert_unicode': True,
         'encoding': 'utf-8',
     })
+    db_engine_discovery_map_name = kwargs.get('db_engine_discovery_map_name',
+                                              'DB_ENGINE_DISCOVERY_MAP')
 
-    if 'DB_ENGINE_DISCOVERY_MAP' in app.config:
-        logger.error("DB_ENGINE_DISCOVERY_MAP exists")
-        db_engine_discovery_map = app.config['DB_ENGINE_DISCOVERY_MAP']
+    if db_engine_discovery_map_name in app.config:
+        logger.info("%s exists" % db_engine_discovery_map_name)
+        db_engine_discovery_map = app.config[db_engine_discovery_map_name]
     else:
-        logger.error("DB_ENGINE_DISCOVERY_MAP isn't set or empty")
+        logger.info("%s isn't set or empty" % db_engine_discovery_map_name)
         db_engine_discovery_map = {}
 
     engines = {}
@@ -98,6 +59,8 @@ def get_discovered_db_engines(app, **kwargs):
         elif 'SQLALCHEMY_BINDS' in app.config \
         and bind_name in app.config['SQLALCHEMY_BINDS']:
             conn_uri = app.config['SQLALCHEMY_BINDS'][bind_name]
+        else:
+            raise NoBindNameFoundError(bind_name)
         if info and 'engine_options' in info:
             engine_options = info['engine_options']
         else:
@@ -106,13 +69,27 @@ def get_discovered_db_engines(app, **kwargs):
             engine_options = merge_two_dicts(engine_options,
                                              all_engines_options)
         if conn_uri:
+            if conn_uri == 'sqlite:///:memory:':
+                engine_options.update({'connect_args': {'check_same_thread': False}, 'poolclass': StaticPool})
             engines[bind_name] = create_engine(conn_uri, **engine_options)
     
     return engines
 
-def get_discovered_db_engine_info(bind_name):
-    if 'DB_ENGINE_DISCOVERY_MAP' in app.config \
-    and bind_name in app.config['DB_ENGINE_DISCOVERY_MAP'] \
-    and app.config['DB_ENGINE_DISCOVERY_MAP'][bind_name]:
-        return app.config['DB_ENGINE_DISCOVERY_MAP'][bind_name]
+def get_discovered_db_engine_info(bind_name, **kwargs):
+    db_engine_discovery_map_name = kwargs.get('db_engine_discovery_map_name',
+                                              'DB_ENGINE_DISCOVERY_MAP')
+    if db_engine_discovery_map_name in app.config \
+    and bind_name in app.config[db_engine_discovery_map_name] \
+    and app.config[db_engine_discovery_map_name][bind_name]:
+        return app.config[db_engine_discovery_map_name][bind_name]
+    else:
+        raise NoBindNameFoundError(bind_name)
 
+def check_db_engine_discovery_map(app, **kwargs):
+    db_engine_discovery_map_name = kwargs.get('db_engine_discovery_map_name',
+                                              'DB_ENGINE_DISCOVERY_MAP')
+    db_engine_discovery_map = app.config.get(db_engine_discovery_map_name)
+    if db_engine_discovery_map_name not in app.config:
+        raise NoSuchConfigKeyError(db_engine_discovery_map_name)
+    if not tuple(db_engine_discovery_map.keys()):
+        raise DbEngineMapIsEmptyError()

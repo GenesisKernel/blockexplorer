@@ -4,6 +4,12 @@ from pprint import pprint
 
 p = inflect.engine()
 
+def merge_two_dicts(x, y):
+    """Given two dicts, merge them into a new dict as a shallow copy."""
+    z = x.copy()
+    z.update(y)
+    return z
+
 def camelize_classname(base, tablename, table):
     "Produce a 'camelized' class name, e.g. "
     "'words_and_underscores' -> 'WordsAndUnderscores'"

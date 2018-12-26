@@ -1,0 +1,294 @@
+{% include 'base.html' %}
+
+{% block extra_stylesheets %}
+  <link href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+  <div class="row">
+    <div class="col-lg-12">
+      <h3><a href="/genesis/backend/{{ seq_num }}/blocks">Blocks</a> &rarr; Block #{{ block_id}}</h3>
+      <ul class="pager">
+        <li id="prev_block_li" class="previous{% if not has_prev %} disabled{% endif %}"><a id="prev_block_href" href="{% if has_prev %}{{ url_for('aux_block', block_id=prev_block_id, seq_num=seq_num) }}{% else %}#{% endif %}">Previous Block</a></li>
+        <li id="next_block_li" class="next{% if not has_next %} disabled{% endif %}"><a id="next_block_href" href="{% if has_next %}{{ url_for('aux_block', block_id=next_block_id, seq_num=seq_num) }}{% else %}#{% endif %}">Next Block</a></li>
+      </ul>
+      {% if error %}
+      <h4>Error</h4>
+      <table id="genesis_error" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% else %}
+      {% if seq_num == 0 %}
+      No block data
+      {% else %}
+      <h4>Header</h4>
+      <table id="genesis_header" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for h_column_name in h_column_names %}
+            <th>{{ h_column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <div>&nbsp;</div>
+      <h4>Content</h4>
+      <table id="genesis_block" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for column_name in column_names %}
+            <th>{{ column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% if not error %}
+  <div class="row">
+    <div class="col-lg-12">
+      <div>&nbsp;</div>
+      <h3>Transactions</h3>
+      {% if seq_num == 0 %}
+      No transactions 
+      {% else %}
+      <table id="genesis_transactions" class="display" cellspacing="0" width="100%">
+        <thead>
+          <tr>
+            {% for t_column_name in t_column_names %}
+            <th>{{ t_column_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_javascripts %}
+  <script src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.colVis.min.js"></script>
+  <script src="https://cdn.datatables.net/fixedheader/3.1.5/js/dataTables.fixedHeader.min.js"></script>
+  <script type="text/javascript" charset="utf-8">
+
+function updatePrevNextBlockItems(pn_info) {
+    if (!pn_info) {
+        return
+    }
+    console.log("pn_info: ", pn_info);
+    if (pn_info.has_prev) {
+        $('#prev_block_li').removeClass('disabled');
+        $('#prev_block_href').attr('href', pn_info.prev_block_url);
+    } else {
+        $('#prev_block_li').addClass('disabled');
+        $('#prev_block_href').attr('href', '#');
+    }
+    if (pn_info.has_next) {
+        $('#next_block_li').removeClass('disabled');
+        $('#next_block_href').attr('href', pn_info.next_block_url);
+    } else {
+        $('#next_block_li').addClass('disabled');
+        $('#next_block_href').attr('href', '#');
+    }
+}
+
+function requestPrevNextBlockInfo() {
+    $.ajax({
+      url: "{{ url_for('aux_block_prev_next_info', seq_num=seq_num, block_id=block_id) }}",
+      method: "GET",
+      success: function(data) {
+        updatePrevNextBlockItems(data);
+      },
+      error: function(data) {
+        console.log("error: " + data.responseText);
+      }
+    });
+}
+
+    $(document).ready(function(){
+      namespace = '{{ socketio_namespace }}'; 
+      var socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port + namespace);
+      socket.on('connect', function() {
+        console.log("on connect");
+        socket.emit('my_event', {data: 'I\'m connected!'});
+      });
+      var ping_pong_times = [];
+      var start_time;
+      //window.setInterval(function() {
+      //  start_time = (new Date).getTime();
+      //  socket.emit('my_ping');
+      //  console.log("my ping");
+      //}, 1000);
+
+      socket.on('my_response', function(msg) {
+        //$('#log').append('<br>' + $('<div/>').text('Received #' + msg.count + ': ' + msg.data).html());
+        if (msg.data == 'reload') {
+            requestPrevNextBlockInfo();
+        }
+      });
+
+      socket.on('my_pong', function() {
+        console.log("on my_pong");
+        var latency = (new Date).getTime() - start_time;
+        ping_pong_times.push(latency);
+        ping_pong_times = ping_pong_times.slice(-30); // keep last 30 samples
+        var sum = 0;
+        for (var i = 0; i < ping_pong_times.length; i++)
+            sum += ping_pong_times[i];
+        //$('#ping-pong').text(Math.round(10 * sum / ping_pong_times.length) / 10);
+      });
+
+      {% if error %}
+      var e_table = $('#genesis_error').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "bPaginate": false,
+        "info": false, 
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/block/{{ block_id }}/error/helper",
+        "columnDefs": [
+            {"targets": 0, "visible": false},
+        ],
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    {% if col_ind == 2 %}
+                    switch(row[0]) {
+                        case "block_id":
+                            return '<a href="/genesis/backend/{{ seq_num }}/block/' + row[2] + '">' + data + '</a>';
+                        default:
+                            return data;
+                    }
+                    {% else %}
+                    return data;
+                    {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      {% endif %}
+      var h_table = $('#genesis_header').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "bPaginate": false,
+        "info": false, 
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/block/{{ block_id }}/header/helper",
+        "columnDefs": [
+            {"targets": 0, "visible": false},
+        ],
+        "columns": [
+            {% for col_ind in range(0, h_columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    {% if col_ind == 2 %}
+                    switch(row[0]) {
+                        case "block_id":
+                            return '<a href="/genesis/backend/{{ seq_num }}/block/' + row[2] + '">' + data + '</a>';
+                        default:
+                            return data;
+                    }
+                    {% else %}
+                    return data;
+                    {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      var table = $('#genesis_block').DataTable({
+        "order": [[ 0, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "bPaginate": false,
+        "info": false, 
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/block/{{ block_id }}/helper",
+        "columnDefs": [
+            {"targets": 0, "visible": false},
+        ],
+        "columns": [
+            {% for col_ind in range(0, columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                    {% if col_ind == 2 %}
+                    switch(row[0]) {
+                        case "id":
+                            return '<a href="/genesis/backend/{{ seq_num }}/block/' + row[2] + '">' + data + '</a>';
+                        default:
+                            return data;
+                    }
+                    {% else %}
+                    return data;
+                    {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      var t_table = $('#genesis_transactions').DataTable({
+        "order": [[ 4, "desc" ]],
+        "processing": true,
+        "serverSide": true,
+        "scrollX": true,
+        "ajax": "/dt/genesis/backend/{{ seq_num }}/block/{{ block_id }}/transactions/helper",
+        "fixedHeader": true,
+        //"dom": 'Bfrtip',
+        //"lengthChange": false,
+        //"columnDefs": [
+        //    {
+        //        "targets": 1,
+        //        "className": 'noVis'
+        //    }
+        //],
+        "buttons": [
+            {
+                "extend": 'colvis',
+                "columns": ':not(.noVis)'
+            },
+            "copy",
+        ],
+        "columns": [
+            {% for col_ind in range(0, t_columns_num) %}
+            {
+                "data": {{ col_ind }},
+                "render": function ( data, type, row, meta ) {
+                {% if col_ind == tx_col_ind %}
+                    return '<a href="/genesis/backend/{{ seq_num }}/transactions_by_block/' + row[{{ block_id_col_ind }}] + '">' + data + '</a>';
+                {% else %}
+                return '<a href="/genesis/backend/{{ seq_num }}/transaction/' + row[1] + '">' + data + '</a>';
+                {% endif %}
+                },
+            },
+            {% endfor %}
+        ]
+      });
+      //t_table.buttons().container().appendTo($('#genesis_transactions_length', t_table.table().container() ) );
+      //t_table.buttons().container().appendTo( '#genesis_transactions_wrapper' );
+    });
+
+
+  </script>
+{% endblock %}

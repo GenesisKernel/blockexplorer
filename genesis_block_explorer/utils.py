@@ -1,4 +1,5 @@
 import six
+from flask import current_app as app
 from datetime import datetime, timezone
 
 from .logging import get_logger
@@ -11,6 +12,9 @@ def is_number(s):
         return True
     except ValueError:
         return False
+
+def is_string(s):
+    return isinstance(s, six.string_types)
 
 def semirepr(value):
     if isinstance(value, six.string_types):
@@ -58,8 +62,36 @@ def get_backend_features_by_version(backend_version):
         app.config['BACKEND_VERSION_FEATURES_MAP'][backend_version]['features']
 
 def ts_to_fmt_time(ts, utc=False):
-    fmt = '%d/%b/%Y %H:%M:%S'
+    if app and hasattr(app, 'config') and app.config.get('TIME_FORMAT'):
+        fmt = app.config.get('TIME_FORMAT')
+    else:
+        fmt = '%d/%b/%Y %H:%M:%S'
     if utc:
         return datetime.utcfromtimestamp(int(ts)).strftime(fmt)
     else:
         return datetime.fromtimestamp(int(ts)).strftime(fmt)
+
+def dt_to_fmt_time(dt, utc=False):
+    if app and hasattr(app, 'config') and app.config.get('TIME_FORMAT'):
+        fmt = app.config.get('TIME_FORMAT')
+    else:
+        fmt = '%d/%b/%Y %H:%M:%S'
+    if utc:
+        return dt.utcnow().strftime(fmt)
+    else:
+        return dt.now().strftime(fmt)
+
+def cmp_lists_to_update_first(one, two):
+    s = {
+        'to_delete': set(one) - set(two),
+        'to_add': set(two) - set(one),
+    }
+    return s
+
+def to_bool(value):
+    if str(value).lower() in ("yes", "y", "true",  "t", "1", "enable", "allow", "permit"):
+        return True
+    elif str(value).lower() in ("no",  "n", "false", "f", "0", "0.0", "", "none", "[]", "{}", "disable", "deny", "reject"):
+        return False
+    else:
+        return False

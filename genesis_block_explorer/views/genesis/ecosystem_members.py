@@ -10,7 +10,7 @@ from ...db import db
 
 from ...models.db_engine.model import get_model_data_by_db_id_and_table_name
 from ...models.db_engine.session import SessionManager
-from ...models.genesis.explicit import get_ecosystem_model, EsKeys
+from ...models.genesis.explicit import get_ecosystem_model, get_keys_model
 from ...models.genesis.utils import get_by_id_or_first_genesis_db_id
 
 from datatables import ColumnDT, DataTables
@@ -24,6 +24,12 @@ sm = SessionManager(app=app)
 class DataTablesEcosystemMembers(DataTablesExt):
     def ecosystem_members_post_query_process(self, **kwargs):
         logger.debug("ecosystems_post_query_process kwargs: %s" % kwargs)
+
+        key_ids = self.prepare_col_ids(
+                            col_ids=kwargs.get('key_ids'))
+        if not key_ids:
+            logger.warning("key_ids isn't set")
+        logger.debug("ecosystems_post_query_process avatar_ids : %s" % key_ids)
         
         avatar_ids = self.prepare_col_ids(
                             col_ids=kwargs.get('avatar_ids'))
@@ -48,6 +54,8 @@ class DataTablesEcosystemMembers(DataTablesExt):
                     for col_id, val in row.items():
                         if col_id in avatar_ids:
                             pass
+                        if col_id in key_ids:
+                            val = str(val)
                         if col_id in decimal_ids:
                             val = str(val)
                         if col_id in public_key_ids:
@@ -61,8 +69,8 @@ class DataTablesEcosystemMembers(DataTablesExt):
 
 @app.route("/genesis/database/<int:id>/ecosystem/<int:ecosystem_id>/members")
 def ecosystem_members(id, ecosystem_id):
-    model = get_ecosystem_model(backend_features=sm.get_be_features(id))
-    es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(id))
+    es = es_model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
     column_names = ['Key ID', 'Amount', 'Public Key']
     valid_db_id = get_by_id_or_first_genesis_db_id(id)
     return render_template('genesis/ecosystem_members.html',
@@ -75,9 +83,9 @@ def ecosystem_members(id, ecosystem_id):
 
 @app.route('/dt/genesis/database/<int:id>/ecosystem/<int:ecosystem_id>/members')
 def dt_ecosystem_members(id, ecosystem_id):
-    model = get_ecosystem_model(backend_features=sm.get_be_features(id))
-    es = model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
-    model = EsKeys
+    es_model = get_ecosystem_model(backend_features=sm.get_be_features(id))
+    es = es_model.query.with_session(sm.get(id)).get_or_404(ecosystem_id)
+    model = get_keys_model(backend_features=sm.get_be_features(id))
     model.set_ecosystem(ecosystem_id)
     column_ids = ['id', 'amount', 'pub']
     columns = [getattr(model, col_id) for col_id in column_ids]
@@ -86,6 +94,7 @@ def dt_ecosystem_members(id, ecosystem_id):
     params = request.args.to_dict()
     rowTable = DataTablesEcosystemMembers(params, query, dt_columns)
     rowTable.ecosystem_members_post_query_process(db_id=id,
+                                          key_ids=[0],
                                           decimal_ids=1,
                                           public_key_ids=2,
                                           avatar_ids=[0],

@@ -19,6 +19,10 @@ class DataTablesHash(DataTables, DataTablesExtMixin, DataTablesHashMixin): pass
 from .mixins.time import DataTablesTimeMixin
 class DataTablesTime(DataTables, DataTablesExtMixin, DataTablesTimeMixin): pass
 
+from .mixins.dt_time import DataTablesDtTimeMixin
+class DataTablesDtTime(DataTables, DataTablesExtMixin, DataTablesDtTimeMixin):
+    pass
+
 from .mixins.hash_time import DataTablesHashTimeMixin
 class DataTablesHashTime(DataTables, DataTablesExtMixin,
                          DataTablesHashTimeMixin): pass

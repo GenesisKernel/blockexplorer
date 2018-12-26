@@ -26,3 +26,14 @@ def get_detailed_block(backend_id, block_id):
     sess = get_backend_session(backend_id)
     return sess.get_detailed_block(block_id)
 
+def get_max_block_id(backend_id):
+    sess = get_backend_session(backend_id)
+    return sess.get_max_block_id()
+
+def get_detailed_blocks_data(backend_id, block_id, count=1):
+    sess = get_backend_session(backend_id)
+    return sess.get_detailed_blocks_data(block_id, count=count)
+
+def get_detailed_blocks(backend_id, block_id, count=1):
+    sess = get_backend_session(backend_id)
+    return sess.get_detailed_blocks(block_id, count=count)

@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-__VERSION__ = '0.2.0'
+__VERSION__ = '0.3.0'
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md')) as f:
@@ -10,20 +10,40 @@ with open(os.path.join(here, 'README.md')) as f:
 
 requires = [
     'sqlalchemy-datatables',
-    'Flask==1.0.2',
+    'Flask',
     'jinja2',
     'Flask-SQLAlchemy',
     'Flask-RESTful',
-    'Flask-JSONTools',
     'Flask-JWT',
-    'psycopg2',
+    'psycopg2-binary',
     'inflect',
     'dictalchemy',
+    'six',
+    'pytz',
+    'aniso8601',
+    'jwt',
+    'Flask-JsonTools',
+    'msgpack',
+    'attrdict',
+    'gunicorn',
+    'astunparse',
+    'docopt',
+    'autopep8',
+    'genesis-blockchain-tools',
     'genesis-blockchain-api-client',
+    'nose',
+    'celery',
+    'redis==2.10.6',
+    'Flask-SocketIO',
+    'eventlet',
+    'socketIO-client',
+    'diskcache'
+    'tcpping',
 ]
 
 dependency_links = [
     'git+https://github.com/blitzstern5/genesis-blockchain-api-client#egg=genesis-blockchain-api-client',
+    'git+https://github.com/blitzstern5/genesis-blockchain-tools#egg=genesis-blockchain-tools',
 ]
 
 setup(
