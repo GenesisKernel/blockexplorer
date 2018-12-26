@@ -1,19 +1,25 @@
 Genesis Block Explorer
 ======================
 
-## Status
-Under heavy development
-
 ## How to run
 
-### webserver
+### Requirements
 
+Install redis server and python packages from requirements.txt
+
+### Config
+
+Create config.py and choose appropriate options
+
+### Run Web Server
+
+```
 gunicorn -b 127.0.0.1:8000 --worker-class eventlet -w 1 genesis_block_explorer.socketio:app
+```
 
-### worker
+### Run Worker/Beat Services
 
-celery -A genesis_block_explorer.celery.tasks worker
+```
+celery -B -A genesis_block_explorer.celery.tasks worker
+```
 
-### beat
-
-celery -A genesis_block_explorer.celery.tasks beat

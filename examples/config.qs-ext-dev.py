@@ -10,7 +10,7 @@ CELERY_BROKER_URL = 'redis://localhost:16379/0'
 CELERY_RESULT_BACKEND = 'redis://localhost:16379/0'
 REDIS_URL = 'redis://localhost:16379/0'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-SQLALCHEMY_DATABASE_URI = 'sqlite:///tmp/genesis-blex/default.sqlite'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
 SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers': 'sqlite:///:memory:',
@@ -20,6 +20,9 @@ SQLALCHEMY_BINDS = {
     'genesis_blex_1': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_1',
     'genesis_blex_2': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_2',
     'genesis_blex_3': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_3',
+    'test_aux_genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_1',
+    'test_aux_genesis2': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_2',
+    'test_aux_genesis3': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_3',
 }
 ENABLE_DATABASE_EXPLORER = True
 ENABLE_DATABASE_SELECTOR = False
@@ -43,6 +46,15 @@ AUX_DB_ENGINE_DISCOVERY_MAP = {
         'backend_version': '20180512',
     },
     'genesis_blex_3': {
+        'backend_version': '20180512',
+    },
+    'test_aux_genesis1': {
+        'backend_version': '20180512',
+    },
+    'test_aux_genesis2': {
+        'backend_version': '20180512',
+    },
+    'test_aux_genesis3': {
         'backend_version': '20180512',
     },
 }
