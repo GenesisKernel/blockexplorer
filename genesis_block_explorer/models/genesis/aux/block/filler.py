@@ -121,20 +121,8 @@ class BlockFiller(Filler):
                 self.fill_all_blocks(disable_locking=True)
                 updated = True
             elif aux_max_block_id < max_block_id:
-                try:
-                    BlockModel.update_from_block_set(
-                        get_detailed_blocks(self.seq_num, aux_max_block_id + 1,
-                                            max_block_id),
-                        session=session
-                    )
-                except ServerError as e:
-                    session = self.aux_sm.get(self.seq_num)
-                    BlockModel.add_fill_error(block_id, error=str(e),
-                                              raw_error=str(e),
-                                              session=session)
-                    session.add(BadBlockModel(id=block_id, error=str(e),
-                                              raw_error=str(e)))
-                    session.commit()
+                self.fill_blocks(aux_max_block_id + 1, max_block_id,
+                                 disable_locking=True)
                 updated = True
         self.unlock(**kwargs)
         self.add_event(caller='update', stage='finished')
