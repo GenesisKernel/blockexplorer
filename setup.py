@@ -2,7 +2,7 @@ import os
 
 from setuptools import setup, find_packages
 
-__VERSION__ = '0.3.0'
+__VERSION__ = '0.3.1'
 
 here = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(here, 'README.md')) as f:
@@ -37,7 +37,7 @@ requires = [
     'Flask-SocketIO',
     'eventlet',
     'socketIO-client',
-    'diskcache'
+    'diskcache',
     'tcpping',
 ]
 
