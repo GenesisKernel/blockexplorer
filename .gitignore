@@ -41,6 +41,11 @@ nosetests.xml
 # Virtualenv folders
 local
 include
+venv
+.venv
+
+# SQLite
+*.db
 *.sqlite
 
 # Logs
