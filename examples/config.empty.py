@@ -12,57 +12,18 @@ SQLALCHEMY_BINDS = {
     'db_engine': 'sqlite:///:memory:',
     'genesis_helpers': 'sqlite:///:memory:',
     'aux_genesis_helpers': 'sqlite:///:memory:',
-    'genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis1',
-    'genesis2': 'postgresql://postgres:genesis@localhost:15432/genesis2',
-    'genesis3': 'postgresql://postgres:genesis@localhost:15432/genesis3',
-    'genesis_blex_1': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_1',
-    'genesis_blex_2': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_2',
-    'genesis_blex_3': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_3',
-    'test_aux_genesis1': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_1',
-    'test_aux_genesis2': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_2',
-    'test_aux_genesis3': 'postgresql://postgres:genesis@localhost:15432/genesis_blex_3',
 }
 ENABLE_DATABASE_EXPLORER = True
 ENABLE_DATABASE_SELECTOR = False
 DB_ENGINE_DISCOVERY_MAP = {
-    'genesis1': {
-        'backend_version': '20180512',
-    },
-    'genesis2': {
-        'backend_version': '20180512',
-    },
-    'genesis3': {
-        'backend_version': '20180512',
-    },
 }
 AUX_HELPERS_BIND_NAME = 'aux_genesis_helpers'
 AUX_DB_ENGINE_DISCOVERY_MAP = {
-    'genesis_blex_1': {
-        'backend_version': '20180512',
-    },
-    'genesis_blex_2': {
-        'backend_version': '20180512',
-    },
-    'genesis_blex_3': {
-        'backend_version': '20180512',
-    },
-    'test_aux_genesis1': {
-        'backend_version': '20180512',
-    },
-    'test_aux_genesis2': {
-        'backend_version': '20180512',
-    },
-    'test_aux_genesis3': {
-        'backend_version': '20180512',
-    },
 }
 SOCKETIO_HOST = '127.0.0.1'
 SOCKETIO_PORT = 8080
 FETCH_NUM_OF_BLOCKS = 50
 BACKEND_API_URLS = {
-    1: 'http://localhost:17301/api/v2',
-    2: 'http://localhost:17302/api/v2',
-    3: 'http://localhost:17303/api/v2',
 }
 BACKEND_VERSION_FEATURES_MAP = {
     '20180830': {
