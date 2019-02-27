@@ -1,5 +1,4 @@
-Genesis Block Explorer
-======================
+# Genesis Block Explorer
 
 ## How to run
 
