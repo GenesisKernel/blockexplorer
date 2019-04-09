@@ -24,7 +24,7 @@ git+https://github.com/blitzstern5/genesis-blockchain-tools@v0.2.1
 git+https://github.com/blitzstern5/genesis-blockchain-api-client@v0.2.4
 nose
 celery
-redis==2.10.6
+redis
 Flask-SocketIO
 eventlet
 socketIO-client
