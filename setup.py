@@ -33,7 +33,7 @@ requires = [
     'genesis-blockchain-api-client',
     'nose',
     'celery',
-    'redis==2.10.6',
+    'redis==4.4.4',
     'Flask-SocketIO',
     'eventlet',
     'socketIO-client',
